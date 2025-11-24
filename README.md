@@ -1,6 +1,6 @@
 # mcw-colors-demo
 
-This template should help get you started developing with Vue 3 in Vite.
+A demo for the Minecraft Wiki armor dyeing calculator, built with Vue 3 and Vite.
 
 ## Recommended IDE Setup
 
