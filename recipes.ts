@@ -143,7 +143,60 @@ class EntriesBE{
   }
 }
 
+class RecipesJE_Handler{
+  recipes: RecipesJEWrapper = new RecipesJEWrapper();
+  /** Add a color (track it in all found levels). */
+  add(c: number){
+    // some bits are not used by these, because the are covered by recipes.found;
+    const i1 = (((c >>> 22) & 3) << 4) | (((c >>> 14) & 3) << 2) | (((c >>>  6) & 3) << 0);
+    const i2 = (((c >>> 20) & 3) << 4) | (((c >>> 12) & 3) << 2) | (((c >>>  4) & 3) << 0);
+    const i3 = (((c >>> 18) & 3) << 4) | (((c >>> 10) & 3) << 2) | (((c >>>  2) & 3) << 0);
+    
+    this.recipes.found0++;
+    this.recipes.found1.s(
+      i1,
+      this.recipes.found1.g(i1) + 1
+    );
+    this.recipes.found2.s(
+      (i1 << 6) | i2,
+      this.recipes.found2.g((i1 << 6) | i2) + 1
+    );
+    this.recipes.found3.s(
+      (i1 << 12) | (i2 << 6) | i3,
+      this.recipes.found3.g((i1 << 12) | (i2 << 6) | i3) + 1
+    );
+    this.recipes.found.s(c, 1);
+  }
+}
+class RecipesBE_Handler{
+  recipes: EntriesBE = new EntriesBE();
+  /** Add a color (track it in all found levels). */
+  add(c: number){
+    // some bits are not used by these, because the are covered by recipes.found;
+    const i1 = (((c >>> 22) & 3) << 4) | (((c >>> 14) & 3) << 2) | (((c >>>  6) & 3) << 0);
+    const i2 = (((c >>> 20) & 3) << 4) | (((c >>> 12) & 3) << 2) | (((c >>>  4) & 3) << 0);
+    const i3 = (((c >>> 18) & 3) << 4) | (((c >>> 10) & 3) << 2) | (((c >>>  2) & 3) << 0);
+    
+    this.recipes.found0++;
+    this.recipes.found1.s(
+      i1,
+      this.recipes.found1.g(i1) + 1
+    );
+    this.recipes.found2.s(
+      (i1 << 6) | i2,
+      this.recipes.found2.g((i1 << 6) | i2) + 1
+    );
+    this.recipes.found3.s(
+      (i1 << 12) | (i2 << 6) | i3,
+      this.recipes.found3.g((i1 << 12) | (i2 << 6) | i3) + 1
+    );
+    this.recipes.found.s(c, 1);
+  }
+}
+
 export {
   EntriesJE,
   EntriesBE,
+  RecipesJE_Handler,
+  RecipesBE_Handler,
 }
