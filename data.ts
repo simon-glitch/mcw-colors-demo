@@ -31,6 +31,9 @@ class UintData{
   g_bigint(i: number){
     return this.dv.getBigUint64(i * 8);
   }
+  g_float(i: number){
+    return this.dv.getFloat32(i * 4);
+  }
   g_int(i: number){
     return this.dv.getUint32(i * 4);
   }
@@ -42,6 +45,9 @@ class UintData{
   }
   s_bigint(i: number, v: bigint){
     return this.dv.setBigUint64(i * 8, v);
+  }
+  s_float(i: number, v: number){
+    return this.dv.setFloat32(i * 4, v);
   }
   s_int(i: number, v: number){
     return this.dv.setUint32(i * 4, v);
@@ -252,6 +258,7 @@ const uint_data_types = {
     byte: {bits: 8, data: Uint8Data, js_data: JSUint8Data,},
     short: {bits: 16, data: Uint16Data, js_data: JSUint16Data,},
     int: {bits: 32, data: Uint32Data, js_data: JSUint32Data,},
+    float: {bits: 32,},
 }
 /**
  * Automatically call the neccessary UintData constructor, and add s and g methods for the access type.
@@ -263,7 +270,7 @@ const uint_data_types = {
  * - `g(i: number | BigInt) => (number | BigInt)` a getter which returns a value of the access type; `i` is the index, and `i` must have a type supported by the storage type;
  * - `s(i: number | BigInt, v: number | BigInt) => void` a getter which sets a value of the access type; `i` is the index, `v` is the value to set, and both parameters must have types supported by the storage type;
  */
-function MakeData(length: number, storage_type: "byte" | "short" | "int", access_type: "bit" | "nibble" | "byte" | "short" | "int", js = false){
+function MakeData(length: number, storage_type: "byte" | "short" | "int", access_type: "bit" | "nibble" | "byte" | "short" | "int" | "float", js = false){
     const st = uint_data_types[storage_type];
     const at = uint_data_types[access_type];
     if(!st) throw TypeError(`${storage_type} is not a valid data type name;`);

@@ -1,19 +1,10 @@
 
-import {
-  colors_je,
-  colors_be,
-  color_index,
-  mix_je,
-  mix_be,
-} from "./mix.js";
 import { UintData, MakeData } from "./data.js";
+import { MAX_DYES_PER_CRAFT } from "./color.js";
 
 /* == Data structures for all of our recipes (called entries) == */
 
 const NO_ENTRY = 0xffffffff;
-
-/** The maximum number of dyes that can be used in a single crafting step. */
-const MAX_DYES_PER_CRAFT = 8;
 
 /**
  * Used for the different qualifications of recipes in `EntriesJE`. Each `UintData` member represents an array of its respective piece of the data for each color entry.
