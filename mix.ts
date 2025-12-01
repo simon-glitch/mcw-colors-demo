@@ -101,6 +101,38 @@ class FusionsJE{
     this.totalMax.s(this.idx, fusion.totalMax);
     this.idx++;
   }
+  /**
+   * Mix a color with one of the fusions.
+   * @param c the color to mix with (the cauldron color, as a `color_int`);
+   * @param idx the fusion index;
+   * @returns the mixed color;
+   */
+  mix(c: number, idx: number): number{
+    const n = this.i_len.g(idx) + 1;
+    // JE is a bit more complicated;
+    const cr = (c >>> 16);
+    const cg = (c >>> 8) & 0xff;
+    const cb = (c & 0xff);
+    const r = this.totalR.g(idx) + cr;
+    const g = this.totalG.g(idx) + cg;
+    const b = this.totalB.g(idx) + cb;
+    const m = this.totalMax.g(idx) + Math.max(cr, cg, cb);
+    // alpha
+    const a = (
+      (m / n) /
+      Math.max(
+        Math.floor(r / n),
+        Math.floor(g / n),
+        Math.floor(b / n),
+      )
+    );
+    // lerping
+    return (
+      (((r / n) * a) >> 16) |
+      (((g / n) * a) >> 8) |
+      (((b / n) * a) >> 0)
+    );
+  }
 }
 
 /** Fuses a list of colors (for `mix_be`), making it so computations don't need to be repeated. */
@@ -147,6 +179,35 @@ class FusionsBE{
     this.g.s(this.idx, fusion.g);
     this.b.s(this.idx, fusion.b);
     this.idx++;
+  }
+  /**
+   * Mix a color with one of the fusions.
+   * @param c the color to mix with (the cauldron color, as a `color_int`);
+   * @param idx the fusion index;
+   * @returns the mixed color;
+   */
+  mix(c: number, idx: number): number{
+    const n = this.i_len.g(idx);
+    // behold, my incorrigible code!
+    /*
+    translation:
+    return (vector form of c / 255 + fusion_color * (2^n - 1)) / 2^n * 255;
+    n is the number of dyes in the fusion.
+    */
+    return (
+      (((
+        (( c >>> 16        ) / 0xff +
+        this.r.g(idx) * (2**n - 1)) / 2**n
+      ) * 0xff) << 16) |
+      (((
+        (((c >>>  8) & 0xff) / 0xff +
+        this.g.g(idx) * (2**n - 1)) / 2**n
+      ) * 0xff) << 8) |
+      (((
+        (( c         & 0xff) / 0xff +
+        this.b.g(idx) * (2**n - 1)) / 2**n
+      ) * 0xff) << 0)
+    );
   }
 }
 
