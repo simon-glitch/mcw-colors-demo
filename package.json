@@ -4,9 +4,13 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "watch": "tsc --watch"
+    "watch": "tsc --watch",
+    "dev": "vite",
+    "preview": "vite preview",
+    "vite:build": "vite build"
   },
   "devDependencies": {
-    "typescript": "^5.5.0"
+    "typescript": "^5.5.0",
+    "vite": "^5.0.0"
   }
 }
