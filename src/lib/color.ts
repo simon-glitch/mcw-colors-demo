@@ -59,10 +59,63 @@ const color_index = {
   pink      : 15,
 };
 
+/**
+ * Split a color into its RGB components, for Java Edition.
+ * @param color the color as 0xRRGGBB (i.e. ARGB-32 with alpha ignored);
+ * @returns vector with r, g, b components in [0, 255];
+ */
+function split_je(color: number): [r: number, g: number, b: number] {
+  return [
+    (color >> 16) & 0xff,
+    (color >>  8) & 0xff,
+    (color      ) & 0xff,
+  ];
+}
+/**
+ * Split a color into its RGB components, for Bedrock Edition.
+ * - BE might actually store these as 32-bit floats internally, but using 64-bit floats here should be fine;
+ * @param color the color as 0xRRGGBB (i.e. ARGB-32 with alpha ignored);
+ * @returns vector with r, g, b components in [0, 1];
+ */
+function split_be(color: number): [r: number, g: number, b: number] {
+  return [
+    ((color >> 16) & 0xff) / 0xff,
+    ((color >>  8) & 0xff) / 0xff,
+    ((color      ) & 0xff) / 0xff,
+  ];
+}
+
+/**
+ * Merge a color vector of RGB components into 0xRRGGBB (i.e. ARGB-32 with alpha ignored), for Java Edition.
+ * @param color vector with r, g, b components in [0, 255];
+ */
+function merge_je(color: [r: number, g: number, b: number]): number {
+  return (
+    (color[0] << 16) |
+    (color[1] <<  8) |
+    (color[2]      )
+  );
+}
+/**
+ * Merge a color vector of RGB components into 0xRRGGBB (i.e. ARGB-32 with alpha ignored), for Bedrock Edition.
+ * @param color vector with r, g, b components in [0, 1];
+ */
+function merge_be(color: [r: number, g: number, b: number]): number {
+  return (
+    ((color[0] * 0xff) << 16) |
+    ((color[1] * 0xff) <<  8) |
+    ((color[2] * 0xff)      )
+  );
+}
+
 export{
   MAX_DYES_PER_CRAFT,
   MAX_DYES_FUSION_BE,
   colors_je,
   colors_be,
   color_index,
+  split_je,
+  split_be,
+  merge_je,
+  merge_be,
 };
