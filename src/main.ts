@@ -26,6 +26,10 @@ import  {
   mix_be,
 } from "./lib/mix";
 
+import {
+  test_fusions,
+} from "./lib/search";
+
 // make everything globally accessible for easy debugging in the browser console;
 (window as any).UintData = UintData;
 (window as any).MakeData = MakeData;

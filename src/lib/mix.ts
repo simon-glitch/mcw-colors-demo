@@ -82,7 +82,7 @@ class FusionsJE{
   totalB: UintData;
   totalMax: UintData;
   capacity: number;
-  constructor(){
+  constructor(fusions: FusionJE[]){
     // start with a small capacity and grow as needed
     this.capacity = 256;
     this.i = MakeData(this.capacity, "int", "int");
@@ -91,6 +91,9 @@ class FusionsJE{
     this.totalG = MakeData(this.capacity, "int", "short");
     this.totalB = MakeData(this.capacity, "int", "short");
     this.totalMax = MakeData(this.capacity, "int", "short");
+    for(const fusion of fusions){
+      this.push(fusion);
+    }
   }
   push(fusion: FusionJE){
     // grow if needed
@@ -176,13 +179,16 @@ class FusionsBE{
   r: UintData;
   g: UintData;
   b: UintData;
-  constructor(){
+  constructor(fusions: FusionBE[]){
     this.capacity = 256;
     this.i = MakeData(this.capacity, "int", "int");
     this.i_len = MakeData(this.capacity, "int", "nibble");
     this.r = MakeData(this.capacity, "int", "float");
     this.g = MakeData(this.capacity, "int", "float");
     this.b = MakeData(this.capacity, "int", "float");
+    for(const fusion of fusions){
+      this.push(fusion);
+    }
   }
   push(fusion: FusionBE){
     // grow if needed
@@ -259,9 +265,36 @@ function choose_with_reps(n: number, k: number, f: (using: number[]) => void){
   }
 }
 
+/**
+ * Iterate through all sequences of `k` items that can be made with `n` to choose from.
+ * @param n total items to choose from;
+ * @param k items to choose for each sequence;
+ * @param f callback function called with each sequence; the argument is a sorted array of the indices chosen;
+ */
+function all_sequences(n: number, k: number, f: (using: number[]) => void){
+  // Initialize with k zeros
+  const using = new Array<number>(k).fill(0);
+  
+  while (true) {
+    f(using.slice());
+    
+    // increment the rightmost position;
+    let i = k - 1;
+    using[i]++;
+    // and carry
+    while (i > 0 && using[i] === n - 1){
+      using[i] = 0;
+      i--;
+      using[i]++;
+    }
+    // if we the last position has max value, then we're done;
+    if (i < 1) break;
+  }
+}
+
 /* If your first thought was "Oh, the combinations with repetitions are the hard part", you were very wrong. */
 function generate_fusions_je(){
-  const fusions = new FusionsJE();
+  const fusions: FusionJE[] = [];
   for(let dyes = 1; dyes <= MAX_DYES_PER_CRAFT; dyes++){
     choose_with_reps(16, dyes, (using) => {
       const fusion = new FusionJE(using, ...using
@@ -275,13 +308,13 @@ function generate_fusions_je(){
       fusions.push(fusion);
     });
   }
-  return fusions;
+  return new FusionsJE(fusions);
 }
 
 function generate_fusions_be(){
-  const fusions = new FusionsBE();
+  const fusions: FusionBE[] = [];
   for(let dyes = 1; dyes <= MAX_DYES_FUSION_BE; dyes++){
-    choose_with_reps(16, dyes, (using) => {
+    all_sequences(16, dyes, (using) => {
       const fusion = new FusionBE(using, ...using
         .map(i => colors_be[i])
         .map(i => [
@@ -293,15 +326,17 @@ function generate_fusions_be(){
       fusions.push(fusion);
     });
   }
-  return fusions;
+  return new FusionsBE(fusions);
 }
 
-export const FUSIONS_JE = generate_fusions_je();
-export const FUSIONS_BE = generate_fusions_be();
+export const FUSIONS_JE = []; // generate_fusions_je();
+export const FUSIONS_BE = []; // generate_fusions_be();
 export {
-  colors_je,
-  colors_be,
-  color_index,
+  FusionJE,
+  FusionBE,
+  FusionsJE,
+  FusionsBE,
   mix_je,
   mix_be,
 }
+
