@@ -1,4 +1,4 @@
-import { UintData, MakeData } from "./data";
+import { TypedArray, UintData, MakeData } from "./data";
 import { colors_je, colors_be, color_index, MAX_DYES_PER_CRAFT, MAX_DYES_FUSION_BE } from "./color";
 
 /* == Mix functions == */
@@ -81,17 +81,30 @@ class FusionsJE{
   totalG: UintData;
   totalB: UintData;
   totalMax: UintData;
+  capacity: number;
   constructor(){
-    this.i = MakeData(0, "int", "int");
-    this.i_len = MakeData(0, "int", "nibble");
-    this.totalR = MakeData(0, "int", "short");
-    this.totalG = MakeData(0, "int", "short");
-    this.totalB = MakeData(0, "int", "short");
-    this.totalMax = MakeData(0, "int", "short");
+    // start with a small capacity and grow as needed
+    this.capacity = 256;
+    this.i = MakeData(this.capacity, "int", "int");
+    this.i_len = MakeData(this.capacity, "int", "nibble");
+    this.totalR = MakeData(this.capacity, "int", "short");
+    this.totalG = MakeData(this.capacity, "int", "short");
+    this.totalB = MakeData(this.capacity, "int", "short");
+    this.totalMax = MakeData(this.capacity, "int", "short");
   }
   push(fusion: FusionJE){
+    // grow if needed
+    if(this.idx >= this.capacity){
+      this.capacity *= 2;
+      this.i = this.i.grow(this.capacity);
+      this.i_len = this.i_len.grow(this.capacity);
+      this.totalR = this.totalR.grow(this.capacity);
+      this.totalG = this.totalG.grow(this.capacity);
+      this.totalB = this.totalB.grow(this.capacity);
+      this.totalMax = this.totalMax.grow(this.capacity);
+    }
     // combine the indices into a single integer; 8 indices, 4 bits each;
-    this.i.s(this.idx, fusion.i.reduce((a, b) => (a >> 4) | (b << 28), 0));
+    this.i.s(this.idx, fusion.i.reduce((a, b) => ((a << 4) | (b & 0xf)) >>> 0, 0));
     this.i_len.s(this.idx, fusion.i.length);
     // copy the other values over;
     this.totalR.s(this.idx, fusion.totalR);
@@ -156,28 +169,39 @@ class FusionBE{
 
 /** Represests multiple instances of `FusionBE`, using `TypedArray`s. */
 class FusionsBE{
-  idx: number = 0;
+  size: number = 0;
+  capacity: number;
   i: UintData;
   i_len: UintData;
   r: UintData;
   g: UintData;
   b: UintData;
   constructor(){
-    this.i = MakeData(0, "int", "int");
-    this.i_len = MakeData(0, "int", "nibble");
-    this.r = MakeData(0, "int", "float");
-    this.g = MakeData(0, "int", "float");
-    this.b = MakeData(0, "int", "float");
+    this.capacity = 256;
+    this.i = MakeData(this.capacity, "int", "int");
+    this.i_len = MakeData(this.capacity, "int", "nibble");
+    this.r = MakeData(this.capacity, "int", "float");
+    this.g = MakeData(this.capacity, "int", "float");
+    this.b = MakeData(this.capacity, "int", "float");
   }
   push(fusion: FusionBE){
+    // grow if needed
+    if(this.size >= this.capacity){
+      this.capacity *= 2;
+      this.i.grow(this.capacity);
+      this.i_len.grow(this.capacity);
+      this.r.grow(this.capacity);
+      this.g.grow(this.capacity);
+      this.b.grow(this.capacity);
+    }
     // combine the indices into a single integer; 8 indices, 4 bits each;
-    this.i.s(this.idx, fusion.i.reduce((a, b) => (a >> 4) | (b << 28), 0));
-    this.i_len.s(this.idx, fusion.i.length);
+    this.i.s(this.size, fusion.i.reduce((a, b) => ((a << 4) | (b & 0xf)) >>> 0, 0));
+    this.i_len.s(this.size, fusion.i.length);
     // copy the other values over;
-    this.r.s(this.idx, fusion.r);
-    this.g.s(this.idx, fusion.g);
-    this.b.s(this.idx, fusion.b);
-    this.idx++;
+    this.r.s(this.size, fusion.r);
+    this.g.s(this.size, fusion.g);
+    this.b.s(this.size, fusion.b);
+    this.size++;
   }
   /**
    * Mix a color with one of the fusions.
@@ -217,24 +241,21 @@ class FusionsBE{
  * @param f callback function called with each combination; the argument is a sorted array of the indices chosen;
  */
 function choose_with_reps(n: number, k: number, f: (using: number[]) => void){
-  const using = [];
-  for(let i = 0; i < k; i++){
-    using[i] = 0;
-  }
-  let j = k - 1;
-  
-  while(using[k - 1] < n){
+  // Initialize with k zeros
+  const using = new Array<number>(k).fill(0);
+
+  while (true) {
     f(using.slice());
-    
-    // weird handling of last cycle;
-    while(j > 0 && using[j] === n - 1){
-      j--;
-    }
-    using[j]++;
-    while(j < k - 1){
-      using[j + 1] = using[j];
-      j++;
-    }
+
+    // find rightmost position that can be incremented;
+    let i = k - 1;
+    while (i >= 0 && using[i] === n - 1) i--;
+    // if none, we're done;
+    if (i < 0) break;
+
+    // increment that position and copy its value to the right;
+    using[i]++;
+    for (let j = i + 1; j < k; j++) using[j] = using[i];
   }
 }
 
@@ -257,7 +278,6 @@ function generate_fusions_je(){
   return fusions;
 }
 
-/* If your first thought was "Oh, the combinations with repetitions are the hard part", you were very wrong. */
 function generate_fusions_be(){
   const fusions = new FusionsBE();
   for(let dyes = 1; dyes <= MAX_DYES_FUSION_BE; dyes++){

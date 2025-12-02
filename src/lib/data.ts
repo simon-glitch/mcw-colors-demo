@@ -1,6 +1,6 @@
 /* == Abstract data structures == */
 
-type TypedArray = Uint8Array | Uint16Array | Uint32Array;
+export type TypedArray = Uint8Array | Uint16Array | Uint32Array;
 
 /**
  * Base class for compressing binary data into a TypedArray.
@@ -8,6 +8,10 @@ type TypedArray = Uint8Array | Uint16Array | Uint32Array;
 class UintData{
   d: TypedArray;
   dv: DataView;
+  /** The number of bits used by the underlying TypedArray (for the storage type). */
+  storage_bits: number = 32;
+  /** The number of bits used by each element (for the access type). */
+  access_bits: number = 32;
   constructor(d: TypedArray){
       this.d = d;
       this.dv = new DataView(d.buffer);
@@ -57,13 +61,31 @@ class UintData{
   s_byte(i: number, v: number){
     return this.dv.setUint8(i, v);
   }
+  /**
+   * Grow the underlying storage to `len` elements (in terms of the underlying TypedArray).
+   * This resizes the underlying buffer in-place (replacing `this.d` and `this.dv`) so
+   * callers which hold references to this object keep working.
+   */
+  grow(len: number): this {
+    // Interpret `len` as the desired number of logical items (access-type elements).
+    const neededTypedLen = Math.ceil((len * this.access_bits) / this.storage_bits);
+    if(neededTypedLen <= this.d.length) return this;
+
+    const MyTypedArray = this.d.constructor as new (n: number) => TypedArray;
+    const new_typed_array = new MyTypedArray(neededTypedLen);
+    new_typed_array.set(this.d);
+    this.d = new_typed_array;
+    this.dv = new DataView(this.d.buffer);
+    return this;
+  }
+
 }
 
 /**
  * Compress binary data into a Uint32Array.
  */
 class Uint32Data extends UintData{
-  d: Uint32Array = new Uint32Array(0);
+  d!: Uint32Array;
   constructor(length: number){
       super(new Uint32Array(length));
   }
@@ -94,7 +116,7 @@ class Uint32Data extends UintData{
  * Compress binary data into a Uint16Array.
  */
 class Uint16Data extends UintData{
-  d: Uint16Array = new Uint16Array(0);
+  d!: Uint16Array;
   constructor(length: number){
       super(new Uint16Array(length));
   }
@@ -125,7 +147,7 @@ class Uint16Data extends UintData{
  * Compress binary data into a Uint16Array.
  */
 class Uint8Data extends UintData{
-    d: Uint8Array = new Uint8Array(0);
+  d!: Uint8Array;
   constructor(length: number){
       super(new Uint8Array(length));
   }
@@ -157,7 +179,7 @@ class Uint8Data extends UintData{
  * Allows for up to 2**53 items of any data type.
  */
 class JSUint32Data extends UintData{
-  d: Uint32Array = new Uint32Array(0);
+  d!: Uint32Array;
   constructor(length: number){
       super(new Uint32Array(length));
   }
@@ -189,7 +211,7 @@ class JSUint32Data extends UintData{
  * Allows for up to 2**53 items of any data type.
  */
 class JSUint16Data extends UintData{
-  d: Uint16Array = new Uint16Array(0);
+  d!: Uint16Array;
   constructor(length: number){
       super(new Uint16Array(length));
   }
@@ -221,7 +243,7 @@ class JSUint16Data extends UintData{
  * Allows for up to 2**53 items of any data type.
  */
 class JSUint8Data extends UintData{
-  d: Uint8Array = new Uint8Array(0);
+  d!: Uint8Array;
   constructor(length: number){
       super(new Uint8Array(length));
   }
@@ -258,6 +280,7 @@ const uint_data_types = {
     short: {bits: 16, data: Uint16Data, js_data: JSUint16Data,},
     int: {bits: 32, data: Uint32Data, js_data: JSUint32Data,},
     float: {bits: 32,},
+    bigint: {bits: 64,},
 }
 /**
  * Automatically call the neccessary UintData constructor, and add s and g methods for the access type.
@@ -265,11 +288,11 @@ const uint_data_types = {
  * @param storage_type {string} the storage type; i.e. how the data is actually represented;
  * @param access_type {string} the access type; i.e. the type of data you want to get/set by default;
  * @param js {bool} whether to use division instead of bitshifts in the internal methods, in order to allow there to be upto 2**53 bits, instead of upto to 2**32;
- * returns {UintData | BigUint64Data} also adds the following methods
- * - `g(i: number | BigInt) => (number | BigInt)` a getter which returns a value of the access type; `i` is the index, and `i` must have a type supported by the storage type;
- * - `s(i: number | BigInt, v: number | BigInt) => void` a getter which sets a value of the access type; `i` is the index, `v` is the value to set, and both parameters must have types supported by the storage type;
+ * returns {UintData} also adds the following methods
+ * - `g(i: number) => (number | BigInt)` a getter which returns a value of the access type; `i` is the index, and `i` must have a type supported by the storage type;
+ * - `s(i: number, v: number | BigInt) => void` a getter which sets a value of the access type; `i` is the index, `v` is the value to set, and both parameters must have types supported by the storage type;
  */
-function MakeData(length: number, storage_type: "byte" | "short" | "int", access_type: "bit" | "nibble" | "byte" | "short" | "int" | "float", js = false){
+function MakeData(length: number, storage_type: "byte" | "short" | "int", access_type: "bit" | "nibble" | "byte" | "short" | "int" | "float" | "bigint", js = false){
     const st = uint_data_types[storage_type];
     const at = uint_data_types[access_type];
     if(!st) throw TypeError(`${storage_type} is not a valid data type name;`);
@@ -284,7 +307,11 @@ function MakeData(length: number, storage_type: "byte" | "short" | "int", access
     const AC =
       (js && (at as any).js_data) ?
       (at as any).js_data : (at as any).data;
+    
     const o = new SC(st_length);
+    o.storage_bits = st.bits;
+    o.access_bits = at.bits;
+    // add g and s methods;
     o.g = (SC === AC) ? MakeData.g : (o as any)["g_" + access_type];
     o.s = (SC === AC) ? MakeData.s : (o as any)["s_" + access_type];
     return o;
