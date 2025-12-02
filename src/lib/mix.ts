@@ -1,6 +1,5 @@
-
-import { UintData, MakeData } from "./data.js";
-import { colors_je, colors_be, color_index, MAX_DYES_PER_CRAFT, MAX_DYES_FUSION_BE } from "./color.js";
+import { UintData, MakeData } from "./data";
+import { colors_je, colors_be, color_index, MAX_DYES_PER_CRAFT, MAX_DYES_FUSION_BE } from "./color";
 
 /* == Mix functions == */
 /** @param cs raw color values */
@@ -73,7 +72,7 @@ class FusionJE{
   }
 }
 
-/** Represets multiple instances of `FusionJE`, using `TypedArray`s. */
+/** Represests multiple instances of `FusionJE`, using `TypedArray`s. */
 class FusionsJE{
   idx: number = 0;
   i: UintData;
@@ -155,7 +154,7 @@ class FusionBE{
   }
 }
 
-/** Represets multiple instances of `FusionBE`, using `TypedArray`s. */
+/** Represests multiple instances of `FusionBE`, using `TypedArray`s. */
 class FusionsBE{
   idx: number = 0;
   i: UintData;

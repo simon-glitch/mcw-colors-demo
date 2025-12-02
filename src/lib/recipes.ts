@@ -1,6 +1,5 @@
-
-import { UintData, MakeData } from "./data.js";
-import { MAX_DYES_PER_CRAFT } from "./color.js";
+import { UintData, MakeData } from "./data";
+import { MAX_DYES_PER_CRAFT } from "./color";
 
 /* == Data structures for all of our recipes (called entries) == */
 

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node ./scripts/postbuild.js",
     "watch": "tsc --watch",
     "dev": "vite",
     "preview": "vite preview",

@@ -1,4 +1,3 @@
-
 /** The maximum number of dyes that can be used in a single crafting step. */
 const MAX_DYES_PER_CRAFT = 8;
 
@@ -67,4 +66,3 @@ export{
   colors_be,
   color_index,
 };
-

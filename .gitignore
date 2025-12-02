@@ -12,6 +12,7 @@ build/
 
 # TypeScript incremental / cache
 .tsbuildinfo
+compiled/
 
 # Editor directories and files
 .vscode/
