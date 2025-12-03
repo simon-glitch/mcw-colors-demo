@@ -13,19 +13,18 @@ function mix_je(...cs: [r: number, g: number, b: number][]): [r: number, g: numb
     tm += Math.max(r, g, b);
   }
   // alpha
-  const a = (
-    tm / cs.length /
-    Math.max(
-      Math.floor(tr / cs.length),
-      Math.floor(tg / cs.length),
-      Math.floor(tb / cs.length),
-    )
+  const avg_max = (tm / cs.length);
+  const max_avg = Math.max(
+    Math.floor(tr / cs.length),
+    Math.floor(tg / cs.length),
+    Math.floor(tb / cs.length),
   );
-  // lerping
+  // lerping;
+  // i think there might be an extra flooring step here;
   return [
-    Math.floor(tr / cs.length) * a,
-    Math.floor(tg / cs.length) * a,
-    Math.floor(tb / cs.length) * a,
+    Math.floor(Math.floor(tr / cs.length) * avg_max / max_avg),
+    Math.floor(Math.floor(tg / cs.length) * avg_max / max_avg),
+    Math.floor(Math.floor(tb / cs.length) * avg_max / max_avg),
   ];
 }
 
@@ -132,20 +131,18 @@ class FusionsJE{
     const g = this.totalG.g(idx) + cg;
     const b = this.totalB.g(idx) + cb;
     const m = this.totalMax.g(idx) + Math.max(cr, cg, cb);
-    // alpha
-    const a = (
-      (m / n) /
-      Math.max(
-        Math.floor(r / n),
-        Math.floor(g / n),
-        Math.floor(b / n),
-      )
+    const avg_max = (m / n);
+    const max_avg = Math.max(
+      Math.floor(r / n),
+      Math.floor(g / n),
+      Math.floor(b / n),
     );
+    console.log({a: avg_max / max_avg});
     // lerping
     return (
-      (((r / n) * a) >> 16) |
-      (((g / n) * a) >> 8) |
-      (((b / n) * a) >> 0)
+      ((Math.floor(r / n) * avg_max / max_avg) << 16) |
+      ((Math.floor(g / n) * avg_max / max_avg) <<  8) |
+      ((Math.floor(b / n) * avg_max / max_avg)      )
     );
   }
 }

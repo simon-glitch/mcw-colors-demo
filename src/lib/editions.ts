@@ -3,12 +3,21 @@ import {
   color_index,
   split_je, split_be,
   merge_je, merge_be,
+  MAX_DYES_PER_CRAFT,
+  MAX_DYES_FUSION_BE,
 } from './color';
 import {
   mix_je, mix_be,
   FusionJE, FusionBE,
   FusionsJE, FusionsBE,
 } from './mix';
+
+import {
+  EntriesJE,
+  EntriesBE,
+  RecipesJE_Handler,
+  RecipesBE_Handler,
+} from './recipes';
 
 export const JE = {
   colors: colors_je,
@@ -19,11 +28,14 @@ export const JE = {
       ]]]
     )
   ),
+  dyemax: MAX_DYES_PER_CRAFT,
   split: split_je,
   merge: merge_je,
   mix: mix_je,
   Fusion: FusionJE,
   Fusions: FusionsJE,
+  entries: EntriesJE,
+  recipes: RecipesJE_Handler,
 };
 export const BE = {
   colors: colors_be,
@@ -34,9 +46,12 @@ export const BE = {
       ]]]
     )
   ),
+  dyemax: MAX_DYES_FUSION_BE,
   split: split_be,
   merge: merge_be,
   mix: mix_be,
   Fusion: FusionBE,
   Fusions: FusionsBE,
+  entries: EntriesBE,
+  recipes: RecipesBE_Handler,
 };

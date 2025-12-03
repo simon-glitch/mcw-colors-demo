@@ -11,17 +11,19 @@ function test_fusion(
   const expect = E.mix(...colors);
   const fusion = new E.Fusion([...fusion_c], ...colors.slice(1));
   const fusions = new E.Fusions([fusion] as FusionJE[] & FusionBE[]);
-  const c = fusions.mix(base, 0);
+  const c = fusions.mix(E.colors[base], 0);
   const result = E.split(c);
   for(let i = 0; i < 3; i++){
     if(Math.abs(result[i] - expect[i]) > 1e-6){
-      throw new Error(
+      const e = new Error(
         `Fusion test failed for base color index ${base}, `
         + `on ${"RGB"[i]} component, `
         + `with fusion colors ${fusion_c.join(", ")}, `
         + `in edition ${E === JE ? "JE" : "BE"}: `
-        + `expected ${expect}, got ${result}.`
+        + `expected ${expect[i]}, got ${result[i]}.`
       );
+      console.log({fusion, fusions});
+      throw e;
     }
   }
 }
@@ -34,6 +36,8 @@ function test_fusion_be(base: number, fusion_c: number[]) {
 }
 
 function test_fusions(){
+  test_fusion_je(0, [5]);
+  test_fusion_be(0, [5]);
   test_fusion_je(0, [5, 7]);
   test_fusion_be(0, [5, 7]);
 }
