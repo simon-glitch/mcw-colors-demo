@@ -42,9 +42,9 @@ function mix_be(...cs: [r: number, g: number, b: number][]): [r: number, g: numb
     cb = (cb + b) / 2;
   }
   return [
-    Math.floor(cr * 0xff),
-    Math.floor(cg * 0xff),
-    Math.floor(cb * 0xff),
+    Math.floor(cr * 0xff) / 0xff,
+    Math.floor(cg * 0xff) / 0xff,
+    Math.floor(cb * 0xff) / 0xff,
   ];
 }
 
