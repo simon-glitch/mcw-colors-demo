@@ -137,7 +137,6 @@ class FusionsJE{
       Math.floor(g / n),
       Math.floor(b / n),
     );
-    console.log({a: avg_max / max_avg});
     // lerping
     return (
       ((Math.floor(r / n) * avg_max / max_avg) << 16) |
@@ -160,9 +159,9 @@ class FusionBE{
     this.b = cs[0][2];
     for(let i = 1; i < cs.length; i++){
       const [r, g, b] = cs[i];
-      this.r = (this.r + r) / 2;
-      this.g = (this.g + g) / 2;
-      this.b = (this.b + b) / 2;
+      this.r = this.r / 2 + r;
+      this.g = this.g / 2 + g;
+      this.b = this.b / 2 + b;
     }
   }
 }
@@ -222,16 +221,22 @@ class FusionsBE{
     */
     return (
       (((
-        (( c >>> 16        ) / 0xff +
-        this.r.g(idx) * (2**n - 1)) / 2**n
+        (
+          ( c >>> 16        ) / 0xff +
+          this.r.g(idx) * 2**(n - 1)
+        ) / 2**n
       ) * 0xff) << 16) |
       (((
-        (((c >>>  8) & 0xff) / 0xff +
-        this.g.g(idx) * (2**n - 1)) / 2**n
+        (
+          ((c >>>  8) & 0xff) / 0xff +
+          this.g.g(idx) * 2**(n - 1)
+        ) / 2**n
       ) * 0xff) << 8) |
       (((
-        (( c         & 0xff) / 0xff +
-        this.b.g(idx) * (2**n - 1)) / 2**n
+        (
+          ( c         & 0xff) / 0xff +
+          this.b.g(idx) * 2**(n - 1)
+        ) / 2**n
       ) * 0xff) << 0)
     );
   }
