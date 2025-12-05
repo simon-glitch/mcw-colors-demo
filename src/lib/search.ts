@@ -74,6 +74,7 @@ class SearchJE{
     this.next_queue = MakeData(64*64*64*64, "int", "bit");
   }
   mix_craftc(
+    base: number,
     next: number,
   ): void{
     if(this.entries.craftc .found.g(next)){
@@ -81,14 +82,20 @@ class SearchJE{
     }
     this.next_queue.s(next, 1);
     this.recipes.craftc .add(next);
-    const next_craftc  = this.entries.craftc .recipe.craftc.g(next);
+    const next_craftc  = this.entries.craftc .recipe.craftc.g(base) + 1;
     const prev_craftc  = this.entries.craftc .recipe.craftc.g(next);
     if(next_craftc > prev_craftc){
       return;
     }
-    const next_dyec    = this.entries.craftc .recipe.dyec  .g(next);
-    const next_dyemax  = this.entries.craftc .recipe.dyemax.g(next);
-    const next_dyelast = this.entries.craftc .recipe.dyelen.g(next);
+    const next_dyelast = JE.fusions.i_len.g(next);
+    const next_dyec    = (
+      this.entries.craftc .recipe.dyec  .g(base) + 
+      next_dyelast
+    );
+    const next_dyemax  = Math.max(
+      this.entries.craftc .recipe.dyemax.g(base),
+      next_dyec
+    );
     const prev_dyec    = this.entries.craftc .recipe.dyec  .g(next);
     const prev_dyemax  = this.entries.craftc .recipe.dyemax.g(next);
     const prev_dyelast = this.entries.craftc .recipe.dyelen.g(next);
@@ -105,6 +112,7 @@ class SearchJE{
     }
   }
   mix_dyec(
+    base: number,
     next: number,
   ): void{
     if(this.entries.dyec   .found.g(next)){
@@ -112,14 +120,20 @@ class SearchJE{
     }
     this.next_queue.s(next, 1);
     this.recipes.dyec   .add(next);
-    const next_craftc  = this.entries.dyec   .recipe.craftc.g(next);
+    const next_craftc  = this.entries.dyec   .recipe.craftc.g(base) + 1;
     const prev_craftc  = this.entries.dyec   .recipe.craftc.g(next);
     if(next_craftc > prev_craftc){
       return;
     }
-    const next_dyec    = this.entries.dyec   .recipe.dyec  .g(next);
-    const next_dyemax  = this.entries.dyec   .recipe.dyemax.g(next);
-    const next_dyelast = this.entries.dyec   .recipe.dyelen.g(next);
+    const next_dyelast = JE.fusions.i_len.g(next);
+    const next_dyec    = (
+      this.entries.dyec   .recipe.dyec  .g(base) + 
+      next_dyelast
+    );
+    const next_dyemax  = Math.max(
+      this.entries.dyec   .recipe.dyemax.g(base),
+      next_dyec
+    );
     const prev_dyec    = this.entries.dyec   .recipe.dyec  .g(next);
     const prev_dyemax  = this.entries.dyec   .recipe.dyemax.g(next);
     const prev_dyelast = this.entries.dyec   .recipe.dyelen.g(next);
@@ -136,6 +150,7 @@ class SearchJE{
     }
   }
   mix_dyemax(
+    base: number,
     next: number,
   ): void{
     if(this.entries.dyemax .found.g(next)){
@@ -143,14 +158,20 @@ class SearchJE{
     }
     this.next_queue.s(next, 1);
     this.recipes.dyemax .add(next);
-    const next_craftc  = this.entries.dyemax .recipe.craftc.g(next);
+    const next_craftc  = this.entries.dyemax .recipe.craftc.g(base) + 1;
     const prev_craftc  = this.entries.dyemax .recipe.craftc.g(next);
     if(next_craftc > prev_craftc){
       return;
     }
-    const next_dyec    = this.entries.dyemax .recipe.dyec  .g(next);
-    const next_dyemax  = this.entries.dyemax .recipe.dyemax.g(next);
-    const next_dyelast = this.entries.dyemax .recipe.dyelen.g(next);
+    const next_dyelast = JE.fusions.i_len.g(next);
+    const next_dyec    = (
+      this.entries.dyemax .recipe.dyec  .g(base) + 
+      next_dyelast
+    );
+    const next_dyemax  = Math.max(
+      this.entries.dyemax .recipe.dyemax.g(base),
+      next_dyec
+    );
     const prev_dyec    = this.entries.dyemax .recipe.dyec  .g(next);
     const prev_dyemax  = this.entries.dyemax .recipe.dyemax.g(next);
     const prev_dyelast = this.entries.dyemax .recipe.dyelen.g(next);
@@ -167,6 +188,7 @@ class SearchJE{
     }
   }
   mix_dyelast(
+    base: number,
     next: number,
   ): void{
     if(this.entries.dyelast.found.g(next)){
@@ -174,15 +196,21 @@ class SearchJE{
     }
     this.next_queue.s(next, 1);
     this.recipes.dyelast.add(next);
-    const next_craftc  = this.entries.dyelast.recipe.craftc.g(next);
+    const next_craftc  = this.entries.dyelast.recipe.craftc.g(base) + 1;
     const prev_craftc  = this.entries.dyelast.recipe.craftc.g(next);
     if(next_craftc > prev_craftc){
       return;
     }
-    const next_dyec    = this.entries.dyelast.recipe.dyec  .g(next);
-    const next_dyemax  = this.entries.dyelast.recipe.dyemax.g(next);
-    const next_dyelast = this.entries.dyelast.recipe.dyelen.g(next);
-    const prev_dyec    = this.entries.dyelast.recipe.dyec  .g(next);
+    const next_dyelast = JE.fusions.i_len.g(next);
+    const next_dyec    = (
+      this.entries.dyelast.recipe.dyec  .g(base) + 
+      next_dyelast
+    );
+    const next_dyemax  = Math.max(
+      this.entries.dyelast.recipe.dyemax.g(base),
+      next_dyec
+    );
+   const prev_dyec    = this.entries.dyelast.recipe.dyec  .g(next);
     const prev_dyemax  = this.entries.dyelast.recipe.dyemax.g(next);
     const prev_dyelast = this.entries.dyelast.recipe.dyelen.g(next);
     if(
@@ -197,29 +225,83 @@ class SearchJE{
       this.entries.dyelast.recipe.dyelen.s(next, next_dyelast);
     }
  }
-  mix(base: number, fusion_idx: number){
+  mix(base: number, fusion_idx: number, allowed_fusions?: UintData){
+    if(allowed_fusions && !allowed_fusions.g(fusion_idx)){
+      return;
+    }
     const next = JE.fusions.mix(base, fusion_idx);
     if(this.mixing.craftc){
-      this.mix_craftc(next);
+      this.mix_craftc(base, next);
     }
     if(this.mixing.dyec){
-      this.mix_dyec(next);
+      this.mix_dyec(base, next);
     }
     if(this.mixing.dyemax){
-      this.mix_dyemax(next);
+      this.mix_dyemax(base, next);
     }
     if(this.mixing.dyelast){
-      this.mix_dyelast(next);
+      this.mix_dyelast(base, next);
     }
   }
-  mixes(base: number){
+  mixes(base: number, allowed_fusions?: UintData){
     for(let i = 0; i < JE.fusions.idx; i++){
-      this.mix(base, i);
+      this.mix(base, i, allowed_fusions);
     }
   }
   main(){
     // add base fusions;
-    // TODO
+    for(let i = 0; i < JE.fusions.idx; i++){
+      // get the color that the fusion makes on its own;
+      const fusion = JE.fusions.i.g(i);
+      const fusion_len = JE.fusions.i_len.g(i);
+      const colors = [
+        (fusion >> 28) & 0xf,
+        (fusion >> 24) & 0xf,
+        (fusion >> 20) & 0xf,
+        (fusion >> 16) & 0xf,
+        (fusion >> 12) & 0xf,
+        (fusion >>  8) & 0xf,
+        (fusion >>  4) & 0xf,
+        (fusion      ) & 0xf,
+      ].slice(0, fusion_len);
+      const result = JE.merge(
+        JE.mix(...colors.map(
+          idx => JE.split(JE.colors[idx])
+        ))
+      );
+      // now add that color;
+      this.recipes.craftc .add(result);
+      this.recipes.dyec   .add(result);
+      this.recipes.dyemax .add(result);
+      this.recipes.dyelast.add(result);
+      // craftc = 1;
+      this.entries.craftc .recipe.craftc.s(result, 1);
+      this.entries.dyec   .recipe.craftc.s(result, 1);
+      this.entries.dyemax .recipe.craftc.s(result, 1);
+      this.entries.dyelast.recipe.craftc.s(result, 1);
+      // dyec = fusion_len;
+      this.entries.craftc .recipe.dyec  .s(result, fusion_len);
+      this.entries.dyec   .recipe.dyec  .s(result, fusion_len);
+      this.entries.dyemax .recipe.dyec  .s(result, fusion_len);
+      this.entries.dyelast.recipe.dyec  .s(result, fusion_len);
+      // dyemax = fusion_len;
+      this.entries.craftc .recipe.dyemax.s(result, fusion_len);
+      this.entries.dyec   .recipe.dyemax.s(result, fusion_len);
+      this.entries.dyemax .recipe.dyemax.s(result, fusion_len);
+      this.entries.dyelast.recipe.dyemax.s(result, fusion_len);
+      // dyelen = fusion_len;
+      this.entries.craftc .recipe.dyelen.s(result, fusion_len);
+      this.entries.dyec   .recipe.dyelen.s(result, fusion_len);
+      this.entries.dyemax .recipe.dyelen.s(result, fusion_len);
+      this.entries.dyelast.recipe.dyelen.s(result, fusion_len);
+      
+      // build the base queue;
+      this.next_queue.s(result, 1);
+    }
+    
+    const base_queue = this.next_queue;
+    // this does not modify base_queue;
+    this.update_queue();
     
     // craftc search;
     this.mixing.craftc = true;
@@ -229,6 +311,102 @@ class SearchJE{
       }
     }
     this.update_queue();
+    
+    // split fusions into lists based on dye count;
+    const split_fusions: UintData[] = [];
+    for(let dye_count = 1; dye_count <= JE.dyemax; dye_count++){
+      split_fusions.push(MakeData(JE.fusions.capacity, "int", "bit"));
+    }
+    for(let i = 0; i < JE.fusions.capacity; i++){
+      if(this.curr_queue.g(i)){
+        const dye_count = JE.fusions.i_len.g(i);
+        // now just add the item to the right queue;
+        split_fusions[dye_count - 1].s(i, 1);
+      }
+    }
+    
+    // dyec search;
+    this.mixing.craftc = false;
+    this.mixing.dyec = true;
+    // we will need multiple queues, one for each dye count from 1 to JE.dyemax;
+    const queues: UintData[] = [];
+    // set this.curr_queue to base_queue; do 1 dye search, fill this.next_queue, push that to queue 1, set this.next_queue to new queue;
+    // set this.curr_queue to base_queue; do 2 dye search, fill this.next_queue, push that to queue 2, set this.next_queue to new queue;
+    // ...
+    // this.next_queue is now a useless empty queue;
+    // check to see if all queues are empty; if so, end;
+    // set this.curr_queue to queue 1;
+    // set this.next_queue to queue 2;
+    // delete queue 1 with shift;
+    // add new queue 8 with push;
+    // repeat until all queues are empty, or until you are satisfied;
+    
+    // convert split fusions into the queues format;
+    for(let dye_count = 1; dye_count <= JE.dyemax; dye_count++){
+      const target = MakeData(64*64*64*64, "int", "bit");
+      for(let i = 0; i < JE.fusions.capacity; i++){
+        if(split_fusions[dye_count - 1].g(i)){
+          // yay i'm repeating code!
+          // get the color that the fusion makes on its own;
+          const fusion = JE.fusions.i.g(i);
+          const fusion_len = JE.fusions.i_len.g(i);
+          const colors = [
+            (fusion >> 28) & 0xf,
+            (fusion >> 24) & 0xf,
+            (fusion >> 20) & 0xf,
+            (fusion >> 16) & 0xf,
+            (fusion >> 12) & 0xf,
+            (fusion >>  8) & 0xf,
+            (fusion >>  4) & 0xf,
+            (fusion      ) & 0xf,
+          ].slice(0, fusion_len);
+          const result = JE.merge(
+            JE.mix(...colors.map(
+              idx => JE.split(JE.colors[idx])
+            ))
+          );
+          // actually add to target now;
+          target.s(result, 1);
+        }
+      }
+      queues[dye_count - 1] = target;
+    }
+    
+    // now begin the process;
+    let max_dyec = 10;
+    let curr_dyec = 1;
+    while(curr_dyec <= max_dyec){
+      let did_something = false;
+      
+      this.next_queue = queues[0];
+      this.update_queue();
+      // remove old queue;
+      queues.shift();
+      // add new empty queue;
+      queues.push(MakeData(64*64*64*64, "int", "bit"));
+      
+      // now process the removed queue, while grabbing values to put in the other queues;
+      for(let dye_count = 1; dye_count <= JE.dyemax; dye_count++){
+        // "grab" results with the right number of dyes;
+        this.next_queue = queues[dye_count - 1];
+        for(let i = 0; i < 64*64*64*64; i++){
+          if(this.curr_queue.g(i)){
+            did_something = true;
+            this.mixes(i, split_fusions[dye_count - 1]);
+          }
+        }
+      }
+      
+      // count how many dyes have been used ''minimum'';
+      curr_dyec++;
+      
+      // avoid one type of infinite loop;
+      // you can still have infinite loops due to bugs in the code above;
+      // those require actually fixing the bugs;
+      if(!did_something){
+        break;
+      }
+    }
   }
 }
 
