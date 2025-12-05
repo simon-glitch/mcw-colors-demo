@@ -10,6 +10,7 @@ import {
   mix_je, mix_be,
   FusionJE, FusionBE,
   FusionsJE, FusionsBE,
+  FUSIONS_JE, FUSIONS_BE,
 } from './mix';
 
 import {
@@ -35,7 +36,8 @@ export const JE = {
   Fusion: FusionJE,
   Fusions: FusionsJE,
   entries: EntriesJE,
-  recipes: RecipesJE_Handler,
+  handler: RecipesJE_Handler,
+  fusions: FUSIONS_JE,
 };
 export const BE = {
   colors: colors_be,
@@ -53,5 +55,6 @@ export const BE = {
   Fusion: FusionBE,
   Fusions: FusionsBE,
   entries: EntriesBE,
-  recipes: RecipesBE_Handler,
+  handler: RecipesBE_Handler,
+  fusions: FUSIONS_BE,
 };

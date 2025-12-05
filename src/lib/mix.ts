@@ -331,8 +331,8 @@ function generate_fusions_be(){
   return new FusionsBE(fusions);
 }
 
-export const FUSIONS_JE = []; // generate_fusions_je();
-export const FUSIONS_BE = []; // generate_fusions_be();
+export const FUSIONS_JE = generate_fusions_je();
+export const FUSIONS_BE = generate_fusions_be();
 export {
   FusionJE,
   FusionBE,

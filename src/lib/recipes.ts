@@ -134,7 +134,10 @@ class EntriesBE{
 }
 
 class RecipesJE_Handler{
-  recipes: RecipesJEWrapper = new RecipesJEWrapper();
+  recipes: RecipesJEWrapper
+  constructor(recipes: RecipesJEWrapper){
+    this.recipes = recipes;
+  }
   /** Add a color (track it in all found levels). */
   add(c: number){
     // some bits are not used by these, because the are covered by recipes.found;
