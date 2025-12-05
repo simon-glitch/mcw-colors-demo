@@ -303,7 +303,7 @@ class SearchJE{
     // this does not modify base_queue;
     this.update_queue();
     
-    // craftc search;
+    // craftc search; -- ensures we find the minimum crafts for all colors;
     this.mixing.craftc = true;
     for(let i = 0; i < 64*64*64*64; i++){
       if(this.curr_queue.g(i)){
@@ -325,7 +325,7 @@ class SearchJE{
       }
     }
     
-    // dyec search;
+    // dyec search; -- ensures we find the minimum dyes used total for all colors;
     this.mixing.craftc = false;
     this.mixing.dyec = true;
     // we will need multiple queues, one for each dye count from 1 to JE.dyemax;
@@ -407,6 +407,17 @@ class SearchJE{
         break;
       }
     }
+    
+    // finally, do dyemax search; -- ensures we find the minimum maximum dyes used in a single craft for all colors;
+    this.mixing.dyec = false;
+    this.mixing.dyemax = true;
+    // welcome to programming hell;
+    // so basically, we want to a craftc search again, but only allowing fusions that don't exceed the current dyemax for each color;
+    // and then we want to disallow all future steps from overwriting our recipes;
+    // because otherwise, we would have recipes like this: [2 dyes, 2 dyes, 2 dyes, 4 dyes]; it starts out as a dyemax = 2 recipe and then becomes a dyemax = 4 recipe later; this is suboptimal, because it might be able to do the same thing with a [4 dyes, 4 dyes] recipe;
+    // this actually means we want to do an 8 dye search first, and then a 7 dye search, and so on down to 1 dye;
+    // ... oh no. i just realized something very bad. i need to store 8 completely separate separate recipes sets, since if your recipe requires a dyemax = 2 base color and you have 4 dyes on the last step, you can't just tell the base color to use dyemax = 4 as well; so each dyemax level needs its own recipe set; so like i need to setup dyemax_1, dyemax_2, etc. all in EntriesJE;
+    // well that's not a big deal; i can also skip dyemax_1 and dyemax_2 since those are trivial;
   }
 }
 
