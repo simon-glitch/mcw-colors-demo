@@ -417,7 +417,7 @@ class SearchJE{
     // because otherwise, we would have recipes like this: [2 dyes, 2 dyes, 2 dyes, 4 dyes]; it starts out as a dyemax = 2 recipe and then becomes a dyemax = 4 recipe later; this is suboptimal, because it might be able to do the same thing with a [4 dyes, 4 dyes] recipe;
     // this actually means we want to do an 8 dye search first, and then a 7 dye search, and so on down to 1 dye;
     // ... oh no. i just realized something very bad. i need to store 8 completely separate separate recipes sets, since if your recipe requires a dyemax = 2 base color and you have 4 dyes on the last step, you can't just tell the base color to use dyemax = 4 as well; so each dyemax level needs its own recipe set; so like i need to setup dyemax_1, dyemax_2, etc. all in EntriesJE;
-    // well that's not a big deal; i can also skip dyemax_1 and dyemax_2 since those are trivial;
+    // well that's not a big deal;
   }
 }
 
