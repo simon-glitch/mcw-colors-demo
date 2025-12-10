@@ -73,8 +73,6 @@ class EntriesJE{
   dyec:    RecipesJEWrapper;
   /** The recipe for the color with the least crafts required in the last crafting step. */
   dyelast: RecipesJEWrapper;
-  /** The recipe for the color with the least dyes required in the crafting step with the most dyes. */
-  dyemax:  RecipesJEWrapper;
   /** The recipes for the color, with varying limits on how many dyes can be used per crafting step. dyelim[0] would be 1 dye per step, dyelim[1] would be 2 dyes per step, etc. This is used to find the dyemax recipes. */
   dyelim: RecipesJEWrapper[] = [];
   /** The recipe for the color that doesn't use brown dye. */
@@ -89,7 +87,6 @@ class EntriesJE{
     this.craftc  = new RecipesJEWrapper();
     this.dyec    = new RecipesJEWrapper();
     this.dyelast = new RecipesJEWrapper();
-    this.dyemax  = new RecipesJEWrapper();
     this.no_brown      = new RecipesJEWrapper();
     this.only_roygbp   = new RecipesJEWrapper();
     this.no_reps       = new RecipesJEWrapper();
