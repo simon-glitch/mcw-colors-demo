@@ -493,31 +493,13 @@ class SearchJE{
     // now begin the process;
     let max_dyec = 4;
     let curr_dyec = 1;
-    // safety guards for repeated state and runaway processing
-    let prev_curr_hash = -1;
-    let repeat_hash_count = 0;
+    const checked = MakeData(64*64*64*64, "int", "bit");
     while(curr_dyec <= max_dyec){
       let did_something = false;
       
       this.next_queue = queues[0];
       this.update_queue();
-      // small checksum of current queue to detect repeated states
-      try {
-        const arr = (this.curr_queue as any).d as (number[] | undefined);
-        let hash = 0;
-        if(arr && arr.length){
-          const len = Math.min(256, arr.length);
-          for(let j = 0; j < len; j++) hash = (hash + (arr[j] | 0)) >>> 0;
-        }
-        if(hash === prev_curr_hash) repeat_hash_count++; else { prev_curr_hash = hash; repeat_hash_count = 0; }
-        if(repeat_hash_count >= 3){
-          console.warn("dyec loop aborted: repeated curr_queue state", { curr_dyec, repeat_hash_count, hash: prev_curr_hash });
-          break;
-        }
-      } catch (e) {
-        // best-effort only
-      }
-
+      
       // remove old queue;
       queues.shift();
       // add new empty queue;
@@ -532,6 +514,7 @@ class SearchJE{
         for(let i = 0; i < 64*64*64*64; i++){
           if(this.curr_queue.g(i)){
             did_something = true;
+            
             processedCount++;
             // occasional progress log to avoid freezing without feedback
             if((processedCount & 0xffff) === 0) console.log(`dyec processing dye_count=${dye_count} processed=${processedCount}`);
@@ -565,6 +548,19 @@ class SearchJE{
       // those require actually fixing the bugs;
       if(!did_something){
         break;
+      }
+      
+      // update checked items;
+      for(let i = 0; i < 64*64*64*64; i++){
+        if(this.curr_queue.g(i)){
+          checked.s(i, 1);
+        }
+      }
+      // make sure checked items are not re-processed;
+      for(let i = 0; i < 64*64*64*64; i++){
+        if(checked.g(i)){
+          this.next_queue.s(i, 0);
+        }
       }
     }
     
