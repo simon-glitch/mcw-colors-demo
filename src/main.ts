@@ -43,4 +43,9 @@ search_instance_je.main();
 // let search_instance_be = new SearchBE();
 // (window as any).search_instance_be = search_instance_be;
 
-console.log("done;");
+// progress control for debugging;
+window.addEventListener("click", ()=>{
+  search_instance_je.main_step(1);
+});
+
+

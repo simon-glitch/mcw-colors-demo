@@ -276,7 +276,13 @@ class SearchJE{
       }
     }
   }
-  main(){
+  main_step: (value: number | PromiseLike<number>) => void = function(){ return; };
+  main_wait(): Promise<number> {
+    return new Promise<number>((resolve) => {
+      this.main_step = resolve;
+    });
+  }
+  async main(){
     // add base fusions;
     for(let i = 0; i < JE.fusions.idx; i++){
       // get the color that the fusion makes on its own;
@@ -390,6 +396,7 @@ class SearchJE{
     }
     
     console.log("fusions added;");
+    await this.main_wait();
     
     // split fusions into lists based on dye count;
     const split_fusions: FusionsJE[] = new Array(JE.dyemax).fill(null).map(
@@ -399,6 +406,7 @@ class SearchJE{
     );
     
     console.log("fusion splitting done;");
+    await this.main_wait();
     
     const base_queue = this.next_queue;
     // this does not modify base_queue;
@@ -421,6 +429,8 @@ class SearchJE{
         if(!did_something){
           break;
         }
+        // advance to the next craft count iteration to avoid infinite loop
+        curr_craftc++;
       }
       this.update_queue();
     }
@@ -429,6 +439,7 @@ class SearchJE{
     craftc_search();
     
     console.log("craftc search done;");
+    await this.main_wait();
     
     // dyec search; -- ensures we find the minimum dyes used total for all colors;
     this.mixing.craftc = false;
@@ -477,21 +488,43 @@ class SearchJE{
     }
     
     console.log("dyec queues ready;");
+    await this.main_wait();
     
     // now begin the process;
-    let max_dyec = 10;
+    let max_dyec = 4;
     let curr_dyec = 1;
+    // safety guards for repeated state and runaway processing
+    let prev_curr_hash = -1;
+    let repeat_hash_count = 0;
     while(curr_dyec <= max_dyec){
       let did_something = false;
       
       this.next_queue = queues[0];
       this.update_queue();
+      // small checksum of current queue to detect repeated states
+      try {
+        const arr = (this.curr_queue as any).d as (number[] | undefined);
+        let hash = 0;
+        if(arr && arr.length){
+          const len = Math.min(256, arr.length);
+          for(let j = 0; j < len; j++) hash = (hash + (arr[j] | 0)) >>> 0;
+        }
+        if(hash === prev_curr_hash) repeat_hash_count++; else { prev_curr_hash = hash; repeat_hash_count = 0; }
+        if(repeat_hash_count >= 3){
+          console.warn("dyec loop aborted: repeated curr_queue state", { curr_dyec, repeat_hash_count, hash: prev_curr_hash });
+          break;
+        }
+      } catch (e) {
+        // best-effort only
+      }
+
       // remove old queue;
       queues.shift();
       // add new empty queue;
       queues.push(MakeData(64*64*64*64, "int", "bit"));
       
       // now process the removed queue, while grabbing values to put in the other queues;
+      let processedCount = 0;
       for(let dye_count = 1; dye_count <= JE.dyemax; dye_count++){
         this.fusions = split_fusions[dye_count - 1];
         // "grab" results with the right number of dyes;
@@ -499,13 +532,33 @@ class SearchJE{
         for(let i = 0; i < 64*64*64*64; i++){
           if(this.curr_queue.g(i)){
             did_something = true;
-            this.mixes(i);
+            processedCount++;
+            // occasional progress log to avoid freezing without feedback
+            if((processedCount & 0xffff) === 0) console.log(`dyec processing dye_count=${dye_count} processed=${processedCount}`);
+            try {
+              this.mixes(i);
+            } catch (err) {
+              console.log("Error while processing dyec loop", {
+                curr_dyec, dye_count, i,
+                err
+              });
+              return;
+            }
+            // safety cap to avoid extremely long processing loops
+            if(processedCount > 5_000_000){
+              console.warn("dyec loop aborted: processed item cap reached", { curr_dyec, processedCount });
+              break;
+            }
           }
         }
+        if(processedCount > 5_000_000) break;
       }
       
       // count how many dyes have been used ''minimum'';
       curr_dyec++;
+      
+      console.log("dyec = " + curr_dyec + " search done;");
+      await this.main_wait();
       
       // avoid one type of infinite loop;
       // you can still have infinite loops due to bugs in the code above;
@@ -516,6 +569,7 @@ class SearchJE{
     }
     
     console.log("dyec search done;");
+    await this.main_wait();
     
     // finally, do dyemax search; -- ensures we find the minimum maximum dyes used in a single craft for all colors;
     this.mixing.dyec = false;
@@ -527,6 +581,7 @@ class SearchJE{
       craftc_search();
       
       console.log("dyemax = " + limit + " search done;");
+      await this.main_wait();
     }
     
     // no_brown search;
@@ -535,6 +590,7 @@ class SearchJE{
     );
     
     console.log("no_brown search done;");
+    await this.main_wait();
     
     // only_roygbp search;
     this.fusions = JE.fusions.filter(
@@ -554,6 +610,7 @@ class SearchJE{
     );
     
     console.log("only_roygbp search done;");
+    await this.main_wait();
     
     // no_reps search;
     this.fusions = JE.fusions.filter(
@@ -570,11 +627,13 @@ class SearchJE{
     );
     
     console.log("no_reps search done;");
+    await this.main_wait();
     
     // no_reps_craft search;
     // uses the same this.fusions as no_reps;
     
     console.log("no_reps_craft search done;");
+    await this.main_wait();
     
   }
 }
