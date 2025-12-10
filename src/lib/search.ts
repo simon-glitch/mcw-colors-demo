@@ -53,14 +53,17 @@ class SearchJE{
   recipes = {
     craftc:  new JE.handler(this.entries.craftc ),
     dyec:    new JE.handler(this.entries.dyec   ),
-    dyemax:  new JE.handler(this.entries.dyemax ),
     dyelast: new JE.handler(this.entries.dyelast),
+    dyelim:  this.entries.dyelim.map(
+      dyemax_entries => new JE.handler(dyemax_entries)
+    ),
   }
   mixing = {
     craftc:  false,
     dyec:    false,
-    dyemax:  false,
+    dyelim:  false,
     dyelast: false,
+    dyelim_i: 0,
   }
   curr_queue: UintData;
   next_queue: UintData;
@@ -153,44 +156,6 @@ class SearchJE{
       this.entries.dyec   .recipe.dyelen.s(next, next_dyelast);
     }
   }
-  mix_dyemax(
-    base: number,
-    next: number,
-  ): void{
-    if(this.entries.dyemax .found.g(next)){
-      return;
-    }
-    this.next_queue.s(next, 1);
-    this.recipes.dyemax .add(next);
-    const next_craftc  = this.entries.dyemax .recipe.craftc.g(base) + 1;
-    const prev_craftc  = this.entries.dyemax .recipe.craftc.g(next);
-    if(next_craftc > prev_craftc){
-      return;
-    }
-    const next_dyelast = JE.fusions.i_len.g(next);
-    const next_dyec    = (
-      this.entries.dyemax .recipe.dyec  .g(base) + 
-      next_dyelast
-    );
-    const next_dyemax  = Math.max(
-      this.entries.dyemax .recipe.dyemax.g(base),
-      next_dyec
-    );
-    const prev_dyec    = this.entries.dyemax .recipe.dyec  .g(next);
-    const prev_dyemax  = this.entries.dyemax .recipe.dyemax.g(next);
-    const prev_dyelast = this.entries.dyemax .recipe.dyelen.g(next);
-    if(
-      (next_dyemax < prev_dyemax) ||
-      (next_dyemax === prev_dyemax && next_craftc < prev_craftc ) ||
-      (next_dyemax === prev_dyemax && next_craftc === prev_craftc && next_dyec < prev_dyec) ||
-      (next_dyemax === prev_dyemax && next_craftc === prev_craftc && next_dyec === prev_dyec && next_dyelast < prev_dyelast)
-    ){
-      this.entries.dyemax .recipe.craftc.s(next, next_craftc );
-      this.entries.dyemax .recipe.dyec  .s(next, next_dyec   );
-      this.entries.dyemax .recipe.dyemax.s(next, next_dyemax );
-      this.entries.dyemax .recipe.dyelen.s(next, next_dyelast);
-    }
-  }
   mix_dyelast(
     base: number,
     next: number,
@@ -229,6 +194,45 @@ class SearchJE{
       this.entries.dyelast.recipe.dyelen.s(next, next_dyelast);
     }
  }
+  mix_dyemax(
+    base: number,
+    next: number,
+  ): void{
+    const dyemax_entries = this.entries.dyelim[this.mixing.dyelim_i];
+    if(dyemax_entries.found.g(next)){
+      return;
+    }
+    this.next_queue.s(next, 1);
+    this.recipes.dyelim[this.mixing.dyelim_i].add(next);
+    const next_craftc  = dyemax_entries.recipe.craftc.g(base) + 1;
+    const prev_craftc  = dyemax_entries.recipe.craftc.g(next);
+    if(next_craftc > prev_craftc){
+      return;
+    }
+    const next_dyelast = JE.fusions.i_len.g(next);
+    const next_dyec    = (
+      dyemax_entries.recipe.dyec  .g(base) + 
+      next_dyelast
+    );
+    const next_dyemax  = Math.max(
+      dyemax_entries.recipe.dyemax.g(base),
+      next_dyec
+    );
+    const prev_dyec    = dyemax_entries.recipe.dyec  .g(next);
+    const prev_dyemax  = dyemax_entries.recipe.dyemax.g(next);
+    const prev_dyelast = dyemax_entries.recipe.dyelen.g(next);
+    if(
+      (next_dyemax < prev_dyemax) ||
+      (next_dyemax === prev_dyemax && next_craftc < prev_craftc ) ||
+      (next_dyemax === prev_dyemax && next_craftc === prev_craftc && next_dyec < prev_dyec) ||
+      (next_dyemax === prev_dyemax && next_craftc === prev_craftc && next_dyec === prev_dyec && next_dyelast < prev_dyelast)
+    ){
+      dyemax_entries.recipe.craftc.s(next, next_craftc );
+      dyemax_entries.recipe.dyec  .s(next, next_dyec   );
+      dyemax_entries.recipe.dyemax.s(next, next_dyemax );
+      dyemax_entries.recipe.dyelen.s(next, next_dyelast);
+    }
+  }
   mix(base: number, fusion_idx: number, allowed_fusions?: UintData){
     if(allowed_fusions && !allowed_fusions.g(fusion_idx)){
       return;
@@ -240,7 +244,7 @@ class SearchJE{
     if(this.mixing.dyec){
       this.mix_dyec(base, next);
     }
-    if(this.mixing.dyemax){
+    if(this.mixing.dyelim){
       this.mix_dyemax(base, next);
     }
     if(this.mixing.dyelast){
@@ -276,28 +280,33 @@ class SearchJE{
       // now add that color;
       this.recipes.craftc .add(result);
       this.recipes.dyec   .add(result);
-      this.recipes.dyemax .add(result);
       this.recipes.dyelast.add(result);
       // craftc = 1;
       this.entries.craftc .recipe.craftc.s(result, 1);
       this.entries.dyec   .recipe.craftc.s(result, 1);
-      this.entries.dyemax .recipe.craftc.s(result, 1);
       this.entries.dyelast.recipe.craftc.s(result, 1);
       // dyec = fusion_len;
       this.entries.craftc .recipe.dyec  .s(result, fusion_len);
       this.entries.dyec   .recipe.dyec  .s(result, fusion_len);
-      this.entries.dyemax .recipe.dyec  .s(result, fusion_len);
       this.entries.dyelast.recipe.dyec  .s(result, fusion_len);
       // dyemax = fusion_len;
       this.entries.craftc .recipe.dyemax.s(result, fusion_len);
       this.entries.dyec   .recipe.dyemax.s(result, fusion_len);
-      this.entries.dyemax .recipe.dyemax.s(result, fusion_len);
       this.entries.dyelast.recipe.dyemax.s(result, fusion_len);
       // dyelen = fusion_len;
       this.entries.craftc .recipe.dyelen.s(result, fusion_len);
       this.entries.dyec   .recipe.dyelen.s(result, fusion_len);
-      this.entries.dyemax .recipe.dyelen.s(result, fusion_len);
       this.entries.dyelast.recipe.dyelen.s(result, fusion_len);
+      
+      // handle dyemax;
+      for(let i = 0; i < JE.dyemax; i++){
+        const dyemax_entries = this.entries.dyelim[i];
+        this.recipes.dyelim[i].add(result);
+        dyemax_entries.recipe.craftc.s(result, 1);
+        dyemax_entries.recipe.dyec  .s(result, fusion_len);
+        dyemax_entries.recipe.dyemax.s(result, fusion_len);
+        dyemax_entries.recipe.dyelen.s(result, fusion_len);
+      }
       
       // build the base queue;
       this.next_queue.s(result, 1);
@@ -308,13 +317,28 @@ class SearchJE{
     this.update_queue();
     
     // craftc search; -- ensures we find the minimum crafts for all colors;
-    this.mixing.craftc = true;
-    for(let i = 0; i < 64*64*64*64; i++){
-      if(this.curr_queue.g(i)){
-        this.mixes(i);
+    const craftc_search = () => {
+      // set max_craftc high if you want to find more recipes and are confident there will not be an infinite loop;
+      let max_craftc = 10;
+      let curr_craftc = 1;
+      while(curr_craftc <= max_craftc){
+        let did_something = false;
+        for(let i = 0; i < 64*64*64*64; i++){
+          if(this.curr_queue.g(i)){
+            did_something = true;
+            this.mixes(i);
+          }
+        }
+        // this is the normal return case; it signifies that we are done;
+        if(!did_something){
+          break;
+        }
       }
+      this.update_queue();
     }
-    this.update_queue();
+    
+    this.mixing.craftc = true;
+    craftc_search();
     
     // split fusions into lists based on dye count;
     const split_fusions: UintData[] = [];
@@ -414,14 +438,13 @@ class SearchJE{
     
     // finally, do dyemax search; -- ensures we find the minimum maximum dyes used in a single craft for all colors;
     this.mixing.dyec = false;
-    this.mixing.dyemax = true;
-    // welcome to programming hell;
-    // so basically, we want to a craftc search again, but only allowing fusions that don't exceed the current dyemax for each color;
-    // and then we want to disallow all future steps from overwriting our recipes;
-    // because otherwise, we would have recipes like this: [2 dyes, 2 dyes, 2 dyes, 4 dyes]; it starts out as a dyemax = 2 recipe and then becomes a dyemax = 4 recipe later; this is suboptimal, because it might be able to do the same thing with a [4 dyes, 4 dyes] recipe;
-    // this actually means we want to do an 8 dye search first, and then a 7 dye search, and so on down to 1 dye;
-    // ... oh no. i just realized something very bad. i need to store 8 completely separate separate recipes sets, since if your recipe requires a dyemax = 2 base color and you have 4 dyes on the last step, you can't just tell the base color to use dyemax = 4 as well; so each dyemax level needs its own recipe set; so like i need to setup dyemax_1, dyemax_2, etc. all in EntriesJE;
-    // well that's not a big deal;
+    this.mixing.dyelim = true;
+    // now simply find the recipes for each limit of dyes per crafting step;
+    for(let limit = 1; limit <= JE.dyemax; limit++){
+      this.curr_queue = base_queue;
+      this.mixing.dyelim_i = limit - 1;
+      craftc_search();
+    }
   }
 }
 
