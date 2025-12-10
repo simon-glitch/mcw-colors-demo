@@ -2,8 +2,12 @@ import { MakeData, UintData } from "./data";
 import {
   JE, BE
 } from "./editions";
-import { FusionJE, FusionBE } from "./mix";
-import { RecipesJE_Handler, RecipesBE_Handler } from "./recipes";
+import {
+  FusionJE, FusionBE
+} from "./mix";
+import {
+  RecipesJE_Handler, RecipesBE_Handler
+} from "./recipes";
 
 function test_fusion(
   base: number, fusion_c: number[],
@@ -421,4 +425,4 @@ class SearchJE{
   }
 }
 
-export { test_fusions };
+export { test_fusions, SearchJE };

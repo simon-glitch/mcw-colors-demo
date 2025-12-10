@@ -10,6 +10,7 @@ import  {
 
 import {
   test_fusions,
+  SearchJE
 } from "./lib/search";
 
 // make everything globally accessible for easy debugging in the browser console;
@@ -20,8 +21,8 @@ import {
 (window as any).test_fusions = test_fusions;
 (window as any).EntriesJE = JE.entries;
 (window as any).EntriesBE = BE.entries;
-(window as any).RecipesJE_Handler = JE.recipes;
-(window as any).RecipesBE_Handler = BE.recipes;
+(window as any).RecipesJE_Handler = JE.handler;
+(window as any).RecipesBE_Handler = BE.handler;
 (window as any).MAX_DYES_PER_CRAFT = JE.dyemax;
 (window as any).MAX_DYES_FUSION_BE = BE.dyemax;
 (window as any).colors_je = JE.colors;
@@ -31,4 +32,10 @@ import {
 (window as any).mix_je = JE.mix;
 (window as any).mix_be = BE.mix;
 
-test_fusions();
+// test_fusions();
+let search_instance_je = new SearchJE();
+(window as any).search_instance_je = search_instance_je;
+search_instance_je.main();
+// let search_instance_be = new SearchBE();
+// (window as any).search_instance_be = search_instance_be;
+
