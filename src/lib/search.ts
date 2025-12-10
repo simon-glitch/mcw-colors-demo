@@ -289,20 +289,23 @@ class SearchJE{
       const fusion = JE.fusions.i.g(i);
       const fusion_len = JE.fusions.i_len.g(i);
       const colors = [
-        (fusion >> 28) & 0xf,
-        (fusion >> 24) & 0xf,
-        (fusion >> 20) & 0xf,
-        (fusion >> 16) & 0xf,
-        (fusion >> 12) & 0xf,
-        (fusion >>  8) & 0xf,
-        (fusion >>  4) & 0xf,
-        (fusion      ) & 0xf,
-      ].slice(0, fusion_len);
+          (fusion >> 28) & 0xf,
+          (fusion >> 24) & 0xf,
+          (fusion >> 20) & 0xf,
+          (fusion >> 16) & 0xf,
+          (fusion >> 12) & 0xf,
+          (fusion >>  8) & 0xf,
+          (fusion >>  4) & 0xf,
+          (fusion      ) & 0xf,
+        ].slice(0, fusion_len);
+      const mappedColors = colors.map(idx => JE.split(JE.colors[idx]));
       const result = JE.merge(
-        JE.mix(...colors.map(
-          idx => JE.split(JE.colors[idx])
-        ))
+        JE.mix(...mappedColors)
       );
+      // Diagnostic: log if the resulting color is unexpectedly the default white
+      if(result === JE.colors[0]){
+        console.warn("fusion produced white; fusion index", i, { fusion, fusion_len, colors, mappedColors, result });
+      }
       // useful mainly for no_reps and no_reps_craft;
       let using_i: [number] = [0];
       let has_reps = false;
@@ -313,6 +316,7 @@ class SearchJE{
       }
       // build the base queue;
       this.next_queue.s(result, 1);
+      console.log({result});
       
       // skip if already found;
       if(this.recipes.craftc.recipes.found.g(result)){
@@ -461,11 +465,11 @@ class SearchJE{
     for(let dye_count = 1; dye_count <= JE.dyemax; dye_count++){
       const target = MakeData(64*64*64*64, "int", "bit");
       const fusions = split_fusions[dye_count - 1];
-      for(let i = 0; i < fusions.capacity; i++){
+      for(let i = 0; i < fusions.idx; i++){
       // yay i'm repeating code!
         // get the color that the fusion makes on its own;
-        const fusion = JE.fusions.i.g(i);
-        const fusion_len = JE.fusions.i_len.g(i);
+        const fusion = fusions.i.g(i);
+        const fusion_len = fusions.i_len.g(i);
         const colors = [
           (fusion >> 28) & 0xf,
           (fusion >> 24) & 0xf,
@@ -476,11 +480,13 @@ class SearchJE{
           (fusion >>  4) & 0xf,
           (fusion      ) & 0xf,
         ].slice(0, fusion_len);
+        const mappedColors = colors.map(idx => JE.split(JE.colors[idx]));
         const result = JE.merge(
-          JE.mix(...colors.map(
-            idx => JE.split(JE.colors[idx])
-          ))
+          JE.mix(...mappedColors)
         );
+        if(result === JE.colors[0]){
+          console.warn("dyec queue fusion produced white", { dye_count, i, fusion, fusion_len, colors, mappedColors, result });
+        }
         // actually add to target now;
         target.s(result, 1);
       }

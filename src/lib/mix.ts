@@ -106,7 +106,7 @@ class FusionsJE{
       this.totalMax = this.totalMax.grow(this.capacity);
     }
     // combine the indices into a single integer; 8 indices, 4 bits each;
-    this.i.s(this.idx, fusion.i.reduce((a, b) => ((a << 4) | (b & 0xf)) >>> 0, 0));
+    this.i.s(this.idx, fusion.i.reduce((a, b) => (a >>> 4) | (b << 28), 0));
     this.i_len.s(this.idx, fusion.i.length);
     // copy the other values over;
     this.totalR.s(this.idx, fusion.totalR);

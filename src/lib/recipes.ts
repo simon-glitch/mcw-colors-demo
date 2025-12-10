@@ -140,7 +140,10 @@ class RecipesJE_Handler{
   }
   /** Add a color (track it in all found levels). */
   add(c: number){
-    // some bits are not used by these, because the are covered by recipes.found;
+    // If this color is already marked as found for this wrapper, do nothing.
+    if(this.recipes.found.g(c)) return;
+    
+    // some bits are not used by these, because they are covered by recipes.found;
     const i1 = (((c >>> 22) & 3) << 4) | (((c >>> 14) & 3) << 2) | (((c >>>  6) & 3) << 0);
     const i2 = (((c >>> 20) & 3) << 4) | (((c >>> 12) & 3) << 2) | (((c >>>  4) & 3) << 0);
     const i3 = (((c >>> 18) & 3) << 4) | (((c >>> 10) & 3) << 2) | (((c >>>  2) & 3) << 0);
@@ -165,11 +168,14 @@ class RecipesBE_Handler{
   recipes: EntriesBE = new EntriesBE();
   /** Add a color (track it in all found levels). */
   add(c: number){
-    // some bits are not used by these, because the are covered by recipes.found;
+    // If this color is already marked as found for this wrapper, do nothing.
+    if(this.recipes.found.g(c)) return;
+
+    // some bits are not used by these, because they are covered by recipes.found;
     const i1 = (((c >>> 22) & 3) << 4) | (((c >>> 14) & 3) << 2) | (((c >>>  6) & 3) << 0);
     const i2 = (((c >>> 20) & 3) << 4) | (((c >>> 12) & 3) << 2) | (((c >>>  4) & 3) << 0);
     const i3 = (((c >>> 18) & 3) << 4) | (((c >>> 10) & 3) << 2) | (((c >>>  2) & 3) << 0);
-    
+
     this.recipes.found0++;
     this.recipes.found1.s(
       i1,
