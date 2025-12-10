@@ -3,7 +3,8 @@ import {
   JE, BE
 } from "./editions";
 import {
-  FusionJE, FusionBE
+  FusionJE, FusionBE,
+  FusionsJE
 } from "./mix";
 import {
   RecipesJE_Handler, RecipesBE_Handler
@@ -48,6 +49,17 @@ function test_fusions(){
   test_fusion_be(0, [5, 7]);
 }
 
+/**
+ * Helper to add a dye to the using data (i.e. on a RecipesJE object). Returns whether it was already used.
+ * @param using_i The using data to modify.
+ * @param add_i The dye index to add.
+ */
+function add_using(using_i: [number], add_i: number){
+  const using_it = ((using_i[0] >>> (0x1f - (add_i & 0xf))) & 1);
+  using_i[0] |=  (1 << (0x1f - (add_i & 0xf)));
+  return using_it;
+}
+
 class SearchJE{
   entries = new JE.entries();
   recipes = {
@@ -57,6 +69,10 @@ class SearchJE{
     dyelim:  this.entries.dyelim.map(
       dyemax_entries => new JE.handler(dyemax_entries)
     ),
+    no_brown:      new JE.handler(this.entries.no_brown     ),
+    only_roygbp:   new JE.handler(this.entries.only_roygbp  ),
+    no_reps:       new JE.handler(this.entries.no_reps      ),
+    no_reps_craft: new JE.handler(this.entries.no_reps_craft),
   }
   mixing = {
     craftc:  false,
@@ -65,6 +81,7 @@ class SearchJE{
     dyelast: false,
     dyelim_i: 0,
   }
+  fusions = JE.fusions;
   curr_queue: UintData;
   next_queue: UintData;
   constructor(){
@@ -233,27 +250,30 @@ class SearchJE{
       dyemax_entries.recipe.dyelen.s(next, next_dyelast);
     }
   }
-  mix(base: number, fusion_idx: number, allowed_fusions?: UintData){
-    if(allowed_fusions && !allowed_fusions.g(fusion_idx)){
-      return;
-    }
-    const next = JE.fusions.mix(base, fusion_idx);
+  mixes(base: number){
     if(this.mixing.craftc){
-      this.mix_craftc(base, next);
+      for(let i = 0; i < JE.fusions.idx; i++){
+        const next = JE.fusions.mix(base, i);
+        this.mix_craftc(base, next);
+      }
     }
     if(this.mixing.dyec){
-      this.mix_dyec(base, next);
+      for(let i = 0; i < JE.fusions.idx; i++){
+        const next = JE.fusions.mix(base, i);
+        this.mix_dyec(base, next);
+      }
     }
     if(this.mixing.dyelim){
-      this.mix_dyemax(base, next);
+      for(let i = 0; i < JE.fusions.idx; i++){
+        const next = JE.fusions.mix(base, i);
+        this.mix_dyemax(base, next);
+      }
     }
     if(this.mixing.dyelast){
-      this.mix_dyelast(base, next);
-    }
-  }
-  mixes(base: number, allowed_fusions?: UintData){
-    for(let i = 0; i < JE.fusions.idx; i++){
-      this.mix(base, i, allowed_fusions);
+      for(let i = 0; i < JE.fusions.idx; i++){
+        const next = JE.fusions.mix(base, i);
+        this.mix_dyelast(base, next);
+      }
     }
   }
   main(){
@@ -277,6 +297,17 @@ class SearchJE{
           idx => JE.split(JE.colors[idx])
         ))
       );
+      // useful mainly for no_reps and no_reps_craft;
+      let using_i: [number] = [0];
+      let has_reps = false;
+      for(const c of colors){
+        if(add_using(using_i, c)){
+          has_reps = true;
+        }
+      }
+      // build the base queue;
+      this.next_queue.s(result, 1);
+      
       // skip if already found;
       if(this.recipes.craftc.recipes.found.g(result)){
         continue;
@@ -301,6 +332,10 @@ class SearchJE{
       this.entries.craftc .recipe.dyelen.s(result, fusion_len);
       this.entries.dyec   .recipe.dyelen.s(result, fusion_len);
       this.entries.dyelast.recipe.dyelen.s(result, fusion_len);
+      // using = using_i[0];
+      this.entries.craftc .recipe.using .s(result, using_i[0]);
+      this.entries.dyec   .recipe.using .s(result, using_i[0]);
+      this.entries.dyelast.recipe.using .s(result, using_i[0]);
       
       // handle dyemax;
       for(let i = 0; i < fusion_len; i++){
@@ -310,26 +345,58 @@ class SearchJE{
         dyemax_entries.recipe.dyec  .s(result, fusion_len);
         dyemax_entries.recipe.dyemax.s(result, fusion_len);
         dyemax_entries.recipe.dyelen.s(result, fusion_len);
+        dyemax_entries.recipe.using .s(result, using_i[0]);
       }
       
-      // build the base queue;
-      this.next_queue.s(result, 1);
+      // handle no_brown;
+      if(!colors.includes(14)){
+        this.recipes.no_brown.add(result);
+        this.entries.no_brown.recipe.craftc.s(result, 1);
+        this.entries.no_brown.recipe.dyec  .s(result, fusion_len);
+        this.entries.no_brown.recipe.dyemax.s(result, fusion_len);
+        this.entries.no_brown.recipe.dyelen.s(result, fusion_len);
+        this.entries.no_brown.recipe.using .s(result, using_i[0]);
+      }
+      // handle only_roygbp;
+      if(!(
+        // just exclude non-roygbp colors;
+        colors.includes(0)  || // exclude white;
+        colors.includes(1)  || // exclude light_gray;
+        colors.includes(2)  || // exclude gray;
+        colors.includes(3)  || // exclude black;
+        colors.includes(4)  || // exclude brown;
+        colors.includes(8)  || // exclude lime;
+        colors.includes(10) || // exclude cyan;
+        colors.includes(11) || // exclude light_blue;
+        colors.includes(14) || // exclude magenta;
+        colors.includes(15)    // exclude pink;
+      )){
+        this.recipes.only_roygbp.add(result);
+        this.entries.only_roygbp.recipe.craftc.s(result, 1);
+        this.entries.only_roygbp.recipe.dyec  .s(result, fusion_len);
+        this.entries.only_roygbp.recipe.dyemax.s(result, fusion_len);
+        this.entries.only_roygbp.recipe.dyelen.s(result, fusion_len);
+        this.entries.only_roygbp.recipe.using .s(result, using_i[0]);
+      }
+      // handle no_reps_craft;
+      if(!has_reps){
+        this.recipes.no_reps_craft.add(result);
+        this.entries.no_reps_craft.recipe.craftc.s(result, 1);
+        this.entries.no_reps_craft.recipe.dyec  .s(result, fusion_len);
+        this.entries.no_reps_craft.recipe.dyemax.s(result, fusion_len);
+        this.entries.no_reps_craft.recipe.dyelen.s(result, fusion_len);
+        this.entries.no_reps_craft.recipe.using .s(result, using_i[0]);
+      }
     }
     
     console.log("fusions added;");
     
     // split fusions into lists based on dye count;
-    const split_fusions: UintData[] = [];
-    for(let dye_count = 1; dye_count <= JE.dyemax; dye_count++){
-      split_fusions.push(MakeData(JE.fusions.capacity, "int", "bit"));
-    }
-    for(let i = 0; i < JE.fusions.capacity; i++){
-      if(this.curr_queue.g(i)){
-        const dye_count = JE.fusions.i_len.g(i);
-        // now just add the item to the right queue;
-        split_fusions[dye_count - 1].s(i, 1);
-      }
-    }
+    const split_fusions: FusionsJE[] = new Array(JE.dyemax).fill(null).map(
+      () => JE.fusions.filter(
+        fusion => fusion.i.length <= JE.dyemax
+      )
+    );
     
     console.log("fusion splitting done;");
     
@@ -382,30 +449,29 @@ class SearchJE{
     // convert split fusions into the queues format;
     for(let dye_count = 1; dye_count <= JE.dyemax; dye_count++){
       const target = MakeData(64*64*64*64, "int", "bit");
-      for(let i = 0; i < JE.fusions.capacity; i++){
-        if(split_fusions[dye_count - 1].g(i)){
-          // yay i'm repeating code!
-          // get the color that the fusion makes on its own;
-          const fusion = JE.fusions.i.g(i);
-          const fusion_len = JE.fusions.i_len.g(i);
-          const colors = [
-            (fusion >> 28) & 0xf,
-            (fusion >> 24) & 0xf,
-            (fusion >> 20) & 0xf,
-            (fusion >> 16) & 0xf,
-            (fusion >> 12) & 0xf,
-            (fusion >>  8) & 0xf,
-            (fusion >>  4) & 0xf,
-            (fusion      ) & 0xf,
-          ].slice(0, fusion_len);
-          const result = JE.merge(
-            JE.mix(...colors.map(
-              idx => JE.split(JE.colors[idx])
-            ))
-          );
-          // actually add to target now;
-          target.s(result, 1);
-        }
+      const fusions = split_fusions[dye_count - 1];
+      for(let i = 0; i < fusions.capacity; i++){
+      // yay i'm repeating code!
+        // get the color that the fusion makes on its own;
+        const fusion = JE.fusions.i.g(i);
+        const fusion_len = JE.fusions.i_len.g(i);
+        const colors = [
+          (fusion >> 28) & 0xf,
+          (fusion >> 24) & 0xf,
+          (fusion >> 20) & 0xf,
+          (fusion >> 16) & 0xf,
+          (fusion >> 12) & 0xf,
+          (fusion >>  8) & 0xf,
+          (fusion >>  4) & 0xf,
+          (fusion      ) & 0xf,
+        ].slice(0, fusion_len);
+        const result = JE.merge(
+          JE.mix(...colors.map(
+            idx => JE.split(JE.colors[idx])
+          ))
+        );
+        // actually add to target now;
+        target.s(result, 1);
       }
       queues[dye_count - 1] = target;
     }
@@ -427,12 +493,13 @@ class SearchJE{
       
       // now process the removed queue, while grabbing values to put in the other queues;
       for(let dye_count = 1; dye_count <= JE.dyemax; dye_count++){
+        this.fusions = split_fusions[dye_count - 1];
         // "grab" results with the right number of dyes;
         this.next_queue = queues[dye_count - 1];
         for(let i = 0; i < 64*64*64*64; i++){
           if(this.curr_queue.g(i)){
             did_something = true;
-            this.mixes(i, split_fusions[dye_count - 1]);
+            this.mixes(i);
           }
         }
       }
@@ -461,6 +528,54 @@ class SearchJE{
       
       console.log("dyemax = " + limit + " search done;");
     }
+    
+    // no_brown search;
+    this.fusions = JE.fusions.filter(
+      fusion => !(fusion.i.includes(14))
+    );
+    
+    console.log("no_brown search done;");
+    
+    // only_roygbp search;
+    this.fusions = JE.fusions.filter(
+      fusion => !(
+        // just exclude non-roygbp colors;
+        fusion.i.includes(0)  || // exclude white;
+        fusion.i.includes(1)  || // exclude light_gray;
+        fusion.i.includes(2)  || // exclude gray;
+        fusion.i.includes(3)  || // exclude black;
+        fusion.i.includes(4)  || // exclude brown;
+        fusion.i.includes(8)  || // exclude lime;
+        fusion.i.includes(10) || // exclude cyan;
+        fusion.i.includes(11) || // exclude light_blue;
+        fusion.i.includes(14) || // exclude magenta;
+        fusion.i.includes(15)    // exclude pink;
+      )
+    );
+    
+    console.log("only_roygbp search done;");
+    
+    // no_reps search;
+    this.fusions = JE.fusions.filter(
+      fusion => {
+        let using_i: [number] = [0];
+        let has_reps = false;
+        for(const c of fusion.i){
+          if(add_using(using_i, c)){
+            has_reps = true;
+          }
+        }
+        return !has_reps;
+      }
+    );
+    
+    console.log("no_reps search done;");
+    
+    // no_reps_craft search;
+    // uses the same this.fusions as no_reps;
+    
+    console.log("no_reps_craft search done;");
+    
   }
 }
 

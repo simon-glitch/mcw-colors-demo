@@ -1,5 +1,5 @@
 import { TypedArray, UintData, MakeData } from "./data";
-import { colors_je, colors_be, color_index, MAX_DYES_PER_CRAFT, MAX_DYES_FUSION_BE } from "./color";
+import { colors_je, colors_be, color_index, MAX_DYES_PER_CRAFT, MAX_DYES_FUSION_BE, split_je } from "./color";
 
 /* == Mix functions == */
 /** @param cs raw color values */
@@ -143,6 +143,41 @@ class FusionsJE{
       ((Math.floor(g / n) * avg_max / max_avg) <<  8) |
       ((Math.floor(b / n) * avg_max / max_avg)      )
     );
+  }
+  toArray(): FusionJE[] {
+    const arr: FusionJE[] = [];
+    for (let i = 0; i < this.idx; i++) {
+      const fusion = this.i.g(i);
+      const colors = [
+        (fusion >> 28) & 0xf,
+        (fusion >> 24) & 0xf,
+        (fusion >> 20) & 0xf,
+        (fusion >> 16) & 0xf,
+        (fusion >> 12) & 0xf,
+        (fusion >>  8) & 0xf,
+        (fusion >>  4) & 0xf,
+        (fusion      ) & 0xf,
+      ]
+      const len = this.i_len.g(i);
+      const indices = colors.slice(0, len);
+      arr.push(new FusionJE(
+        indices,
+        ...(
+          indices
+          .map(idx => colors_je[idx])
+          .map(c => split_je(c))
+        )
+      ));
+    }
+    return arr;
+  }
+  filter(predicate: (fusion: FusionJE) => boolean): FusionsJE {
+    return this.toArray()
+      .filter(predicate)
+      .reduce((fusions, fusion) => {
+        fusions.push(fusion);
+        return fusions;
+      }, new FusionsJE([]));
   }
 }
 

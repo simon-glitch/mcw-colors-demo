@@ -19,6 +19,8 @@ class RecipesJE{
   dyes:   UintData;
   /** Length of this.dyes. Max length is 8. */
   dyelen: UintData;
+  /** Which dyes are being used at least once in this recipe of the color. Each bit represents a dye. */
+  using:  UintData;
   /** The parent color. i.e. the color the armor needs to have before this craft. */
   color:  UintData;
   constructor(){
@@ -27,6 +29,7 @@ class RecipesJE{
     this.dyemax = MakeData(64*64*64*64, "int", "nibble");
     this.dyes   = MakeData(64*64*64*64, "int", "int");
     this.dyelen = MakeData(64*64*64*64, "int", "nibble");
+    this.using  = MakeData(64*64*64*64, "int", "short");
     this.color  = MakeData(64*64*64*64, "int", "int");
     
     this.craftc.d.fill(0xff);
