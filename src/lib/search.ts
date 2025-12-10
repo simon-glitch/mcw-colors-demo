@@ -277,6 +277,10 @@ class SearchJE{
           idx => JE.split(JE.colors[idx])
         ))
       );
+      // skip if already found;
+      if(this.recipes.craftc.recipes.found.g(result)){
+        continue;
+      }
       // now add that color;
       this.recipes.craftc .add(result);
       this.recipes.dyec   .add(result);
@@ -299,7 +303,7 @@ class SearchJE{
       this.entries.dyelast.recipe.dyelen.s(result, fusion_len);
       
       // handle dyemax;
-      for(let i = 0; i < JE.dyemax; i++){
+      for(let i = 0; i < fusion_len; i++){
         const dyemax_entries = this.entries.dyelim[i];
         this.recipes.dyelim[i].add(result);
         dyemax_entries.recipe.craftc.s(result, 1);
@@ -312,6 +316,23 @@ class SearchJE{
       this.next_queue.s(result, 1);
     }
     
+    console.log("fusions added;");
+    
+    // split fusions into lists based on dye count;
+    const split_fusions: UintData[] = [];
+    for(let dye_count = 1; dye_count <= JE.dyemax; dye_count++){
+      split_fusions.push(MakeData(JE.fusions.capacity, "int", "bit"));
+    }
+    for(let i = 0; i < JE.fusions.capacity; i++){
+      if(this.curr_queue.g(i)){
+        const dye_count = JE.fusions.i_len.g(i);
+        // now just add the item to the right queue;
+        split_fusions[dye_count - 1].s(i, 1);
+      }
+    }
+    
+    console.log("fusion splitting done;");
+    
     const base_queue = this.next_queue;
     // this does not modify base_queue;
     this.update_queue();
@@ -319,7 +340,7 @@ class SearchJE{
     // craftc search; -- ensures we find the minimum crafts for all colors;
     const craftc_search = () => {
       // set max_craftc high if you want to find more recipes and are confident there will not be an infinite loop;
-      let max_craftc = 10;
+      let max_craftc = 2;
       let curr_craftc = 1;
       while(curr_craftc <= max_craftc){
         let did_something = false;
@@ -340,18 +361,7 @@ class SearchJE{
     this.mixing.craftc = true;
     craftc_search();
     
-    // split fusions into lists based on dye count;
-    const split_fusions: UintData[] = [];
-    for(let dye_count = 1; dye_count <= JE.dyemax; dye_count++){
-      split_fusions.push(MakeData(JE.fusions.capacity, "int", "bit"));
-    }
-    for(let i = 0; i < JE.fusions.capacity; i++){
-      if(this.curr_queue.g(i)){
-        const dye_count = JE.fusions.i_len.g(i);
-        // now just add the item to the right queue;
-        split_fusions[dye_count - 1].s(i, 1);
-      }
-    }
+    console.log("craftc search done;");
     
     // dyec search; -- ensures we find the minimum dyes used total for all colors;
     this.mixing.craftc = false;
@@ -400,6 +410,8 @@ class SearchJE{
       queues[dye_count - 1] = target;
     }
     
+    console.log("dyec queues ready;");
+    
     // now begin the process;
     let max_dyec = 10;
     let curr_dyec = 1;
@@ -436,6 +448,8 @@ class SearchJE{
       }
     }
     
+    console.log("dyec search done;");
+    
     // finally, do dyemax search; -- ensures we find the minimum maximum dyes used in a single craft for all colors;
     this.mixing.dyec = false;
     this.mixing.dyelim = true;
@@ -444,6 +458,8 @@ class SearchJE{
       this.curr_queue = base_queue;
       this.mixing.dyelim_i = limit - 1;
       craftc_search();
+      
+      console.log("dyemax = " + limit + " search done;");
     }
   }
 }
