@@ -325,6 +325,10 @@ class SearchJE{
       if(this.curr_queue.g(i)){
         const dye_count = JE.fusions.i_len.g(i);
         // now just add the item to the right queue;
+        if(!split_fusions?.[dye_count - 1]?.s){
+          console.log({split_fusions, dye_count, i});
+          return;
+        }
         split_fusions[dye_count - 1].s(i, 1);
       }
     }

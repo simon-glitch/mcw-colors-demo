@@ -91,7 +91,7 @@ class Uint32Data extends UintData{
   }
   /** returns Uint4 (nibble); */
   g_nibble(i: number){
-    return (this.d[i >>> 3] & (0xf << ((i & 0x7) << 2)));
+    return ((this.d[i >>> 3] >>> ((0x8 - (i & 0x7)) << 2)) & 0xf);
   }
   /** returns boolean; */
   g_bool(i: number){
@@ -100,9 +100,9 @@ class Uint32Data extends UintData{
   /** sets Uint4 (nibble); */
   s_nibble(i: number, v: number){
     // remove existing value;
-    this.d[i >>> 3] &= ~(0xf << ((i & 0x7) << 2));
+    this.d[i >>> 3] &= ~(0xf << ((0x8 - (i & 0x7)) << 2));
     // then replace it;
-    this.d[i >>> 3] |= ((v & 0xf) << ((i & 0x7) << 2));
+    this.d[i >>> 3] |= ((v & 0xf) << ((0x8 - (i & 0x7)) << 2));
   }
   /** sets boolean; */
   s_bool(i: number, v: number){
@@ -122,7 +122,7 @@ class Uint16Data extends UintData{
   }
   /** returns Uint4 (nibble); */
   g_nibble(i: number){
-    return (this.d[i >>> 2] & (0xf << ((i & 0x3) << 2)));
+    return ((this.d[i >>> 2] >>> ((0x4 - (i & 0x3)) << 2)) & 0xf);
   }
   /** returns boolean; */
   g_bool(i: number){
@@ -131,9 +131,9 @@ class Uint16Data extends UintData{
   /** sets Uint4 (nibble); */
   s_nibble(i: number, v: number){
     // remove existing value;
-    this.d[i >>> 2] &= ~(0xf << ((i & 0x3) << 2));
+    this.d[i >>> 2] &= ~(0xf << ((0x4 - (i & 0x3)) << 2));
     // then replace it;
-    this.d[i >>> 2] |= ((v & 0xf) << ((i & 0x3) << 2));
+    this.d[i >>> 2] |= ((v & 0xf) << ((0x4 - (i & 0x3)) << 2));
   }
   /** sets boolean; */
   s_bool(i: number, v: number){
@@ -153,7 +153,7 @@ class Uint8Data extends UintData{
   }
   /** returns Uint4 (nibble); */
   g_nibble(i: number){
-    return (this.d[i >>> 1] & (0xf << ((i & 0x1) << 2)));
+    return ((this.d[i >>> 1] >>> ((0x2 - (i & 0x1)) << 2)) & 0xf);
   }
   /** returns boolean; */
   g_bool(i: number){
@@ -162,9 +162,9 @@ class Uint8Data extends UintData{
   /** sets Uint4 (nibble); */
   s_nibble(i: number, v: number){
     // remove existing value;
-    this.d[i >>> 1] &= ~(0xf << ((i & 0x1) << 2));
+    this.d[i >>> 1] &= ~(0xf << ((0x2 - (i & 0x1)) << 2));
     // then replace it;
-    this.d[i >>> 1] |= ((v & 0xf) << ((i & 0x1) << 2));
+    this.d[i >>> 1] |= ((v & 0xf) << ((0x2 - (i & 0x1)) << 2));
   }
   /** sets boolean; */
   s_bool(i: number, v: number){
@@ -185,7 +185,7 @@ class JSUint32Data extends UintData{
   }
   /** returns Uint4 (nibble); */
   g_nibble(i: number){
-    return (this.d[(i / 8) | 0] & (0xf << ((i & 0x7) << 2)));
+    return ((this.d[(i / 8) | 0] >>> ((0x8 - (i & 0x7)) << 2)) & 0xf);
   }
   /** returns boolean; */
   g_bool(i: number){
@@ -194,9 +194,9 @@ class JSUint32Data extends UintData{
   /** sets Uint4 (nibble); */
   s_nibble(i: number, v: number){
     // remove existing value;
-    this.d[(i / 8) | 0] &= ~(0xf << ((i & 0x7) << 2));
+    this.d[(i / 8) | 0] &= ~(0xf << ((0x8 - (i & 0x7)) << 2));
     // then replace it;
-    this.d[(i / 8) | 0] |= ((v & 0xf) << ((i & 0x7) << 2));
+    this.d[(i / 8) | 0] |= ((v & 0xf) << ((0x8 - (i & 0x7)) << 2));
   }
   /** sets boolean; */
   s_bool(i: number, v: number){
@@ -217,7 +217,7 @@ class JSUint16Data extends UintData{
   }
   /** returns Uint4 (nibble); */
   g_nibble(i: number){
-    return (this.d[(i / 4) | 0] & (0xf << ((i & 0x3) << 2)));
+    return ((this.d[(i / 4) | 0] >>> ((0x4 - (i & 0x3)) << 2)) & 0xf);
   }
   /** returns boolean; */
   g_bool(i: number){
@@ -226,9 +226,9 @@ class JSUint16Data extends UintData{
   /** sets Uint4 (nibble); */
   s_nibble(i: number, v: number){
     // remove existing value;
-    this.d[(i / 4) | 0] &= ~(0xf << ((i & 0x3) << 2));
+    this.d[(i / 4) | 0] &= ~(0xf << ((0x4 - (i & 0x3)) << 2));
     // then replace it;
-    this.d[(i / 4) | 0] |= ((v & 0xf) << ((i & 0x3) << 2));
+    this.d[(i / 4) | 0] |= ((v & 0xf) << ((0x4 - (i & 0x3)) << 2));
   }
   /** sets boolean; */
   s_bool(i: number, v: number){
@@ -249,7 +249,7 @@ class JSUint8Data extends UintData{
   }
   /** returns Uint4 (nibble); */
   g_nibble(i: number){
-    return (this.d[(i / 2) | 0] & (0xf << ((i & 0x1) << 2)));
+    return ((this.d[(i / 2) | 0] >>> ((0x2 - (i & 0x1)) << 2)) & 0xf);
   }
   /** returns boolean; */
   g_bool(i: number){
@@ -258,9 +258,9 @@ class JSUint8Data extends UintData{
   /** sets Uint4 (nibble); */
   s_nibble(i: number, v: number){
     // remove existing value;
-    this.d[(i / 2) | 0] &= ~(0xf << ((i & 0x1) << 2));
+    this.d[(i / 2) | 0] &= ~(0xf << ((0x2 - (i & 0x1)) << 2));
     // then replace it;
-    this.d[(i / 2) | 0] |= ((v & 0xf) << ((i & 0x1) << 2));
+    this.d[(i / 2) | 0] |= ((v & 0xf) << ((0x2 - (i & 0x1)) << 2));
   }
   /** sets boolean; */
   s_bool(i: number, v: number){
@@ -312,6 +312,7 @@ function MakeData(length: number, storage_type: "byte" | "short" | "int", access
     o.storage_bits = st.bits;
     o.access_bits = at.bits;
     // add g and s methods;
+    if(access_type === "bit") (access_type as any) = "bool";
     o.g = (SC === AC) ? MakeData.g : (o as any)["g_" + access_type];
     o.s = (SC === AC) ? MakeData.s : (o as any)["s_" + access_type];
     return o;
