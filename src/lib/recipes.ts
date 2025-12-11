@@ -163,6 +163,25 @@ class RecipesJE_Handler{
     );
     this.recipes.found.s(c, 1);
   }
+  recipe(c: number): number[][] {
+    const r: number[][] = [];
+    while(true){
+      const dyelen = this.recipes.recipe.dyelen.g(c);
+      if(dyelen === 0) break;
+      const colors = this.recipes.recipe.dyes.g(c);
+      r.push([
+        (colors >> 28) & 0xf,
+        (colors >> 24) & 0xf,
+        (colors >> 20) & 0xf,
+        (colors >> 16) & 0xf,
+        (colors >> 12) & 0xf,
+        (colors >>  8) & 0xf,
+        (colors >>  4) & 0xf,
+        (colors      ) & 0xf,
+      ]);
+    }
+    return r;
+  }
 }
 class RecipesBE_Handler{
   recipes: EntriesBE = new EntriesBE();
