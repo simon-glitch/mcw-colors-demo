@@ -84,6 +84,8 @@ class SearchJE{
   fusions = JE.fusions;
   curr_queue: UintData;
   next_queue: UintData;
+  private _res_main_step_i: (value: number | PromiseLike<number>) => void = async function(){ return; };
+  private _res_main_wait: (value: number | PromiseLike<number>) => void = function(){ return; };
   constructor(){
     this.curr_queue = MakeData(64*64*64*64, "int", "bit");
     this.next_queue = MakeData(64*64*64*64, "int", "bit");
@@ -276,10 +278,30 @@ class SearchJE{
       }
     }
   }
-  main_step: (value: number | PromiseLike<number>) => void = function(){ return; };
-  main_wait(): Promise<number> {
+  async _main_step_i(steps: number): Promise<number> {
     return new Promise<number>((resolve) => {
-      this.main_step = resolve;
+      this._res_main_step_i = resolve;
+    });
+  };
+  /**
+   * Tell the search.main to step forward.
+   * @param steps number of times to automatically step the search forward;
+   */
+  async main_step(steps: number): Promise<number> {
+    for(let i = 0; i < steps; i++){
+      await this._main_step_i(i);
+      this._res_main_wait(i);
+    }
+    return steps;
+  };
+  /**
+   * Used in main to wait for a signal from main_step, which indicates when main should continue.
+   * @returns promise that resolves when main_step signals to continue;
+   */
+  main_wait(): Promise<number> {
+    this._res_main_step_i(0);
+    return new Promise<number>((resolve) => {
+      this._res_main_wait = resolve;
     });
   }
   async main(){
