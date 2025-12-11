@@ -163,11 +163,16 @@ class RecipesJE_Handler{
     );
     this.recipes.found.s(c, 1);
   }
-  recipe(c: number): number[][] {
+  /**
+   * Get the recipe for a color.
+   * @param c the color;
+   * @returns `[base, dyes]`, where: `base` is the base color (or `NO_ENTRY`); `dyes` is an array of dye arrays; each dye array is the indices of the dyes used in one crafting step;
+   */
+  recipe(c: number): [number, number[][]] {
     const r: number[][] = [];
     while(true){
+      if(this.recipes.found.g(c) === 0) break;
       const dyelen = this.recipes.recipe.dyelen.g(c);
-      if(dyelen === 0) break;
       const colors = this.recipes.recipe.dyes.g(c);
       r.push([
         (colors >> 28) & 0xf,
@@ -179,8 +184,35 @@ class RecipesJE_Handler{
         (colors >>  4) & 0xf,
         (colors      ) & 0xf,
       ]);
+      c = this.recipes.recipe.color.g(c);
+      if(c === NO_ENTRY) break;
     }
-    return r;
+    return [c, r.reverse()];
+  }
+  /**
+   * Get a random recipe from those that have been found. (using optional filter)
+   * @param filter a filter function, like what Array.filter uses;
+   * @returns the same as `recipe(c: number)`;
+   */
+  random_recipe(filter?: (c: number) => boolean): [number, number[][]] {
+    filter ??= (() => true);
+    let total = 0;
+    for(let i = 0; i < 2**24; i++){
+      if(this.recipes.found.g(i) && filter(i)) total++;
+    }
+    // fun fact: this is guaranteed to be less than total;
+    // floating point math cannot cause it to overshoot;
+    let use = Math.floor(Math.random() * total);
+    let current = 0;
+    let i = 0
+    for(; i < 2**24; i++){
+      if(this.recipes.found.g(i) && filter(i)) current++;
+      if(current > use) {
+        break;
+      }
+    }
+    // if total === 0, this causes an out of bounds error;
+    return this.recipe(i);
   }
 }
 class RecipesBE_Handler{
