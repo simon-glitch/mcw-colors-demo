@@ -512,7 +512,7 @@ class SearchJE{
     await this.main_wait();
     
     // now begin the process;
-    let max_dyec = 1;
+    let max_dyec = 4;
     let curr_dyec = 1;
     const checked = MakeData(64*64*64*64, "int", "bit");
     while(curr_dyec <= max_dyec){
