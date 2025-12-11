@@ -279,6 +279,7 @@ class SearchJE{
     }
   }
   async _main_step_i(steps: number): Promise<number> {
+    this._res_main_step_i(0);
     return new Promise<number>((resolve) => {
       this._res_main_step_i = resolve;
     });
@@ -289,8 +290,8 @@ class SearchJE{
    */
   async main_step(steps: number): Promise<number> {
     for(let i = 0; i < steps; i++){
-      await this._main_step_i(i);
       this._res_main_wait(i);
+      await this._main_step_i(i);
     }
     return steps;
   };
@@ -324,10 +325,6 @@ class SearchJE{
       const result = JE.merge(
         JE.mix(...mappedColors)
       );
-      // Diagnostic: log if the resulting color is unexpectedly the default white
-      if(result === JE.colors[0]){
-        console.warn("fusion produced white; fusion index", i, { fusion, fusion_len, colors, mappedColors, result });
-      }
       // useful mainly for no_reps and no_reps_craft;
       let using_i: [number] = [0];
       let has_reps = false;
@@ -338,7 +335,6 @@ class SearchJE{
       }
       // build the base queue;
       this.next_queue.s(result, 1);
-      console.log({result});
       
       // skip if already found;
       if(this.recipes.craftc.recipes.found.g(result)){
@@ -506,9 +502,6 @@ class SearchJE{
         const result = JE.merge(
           JE.mix(...mappedColors)
         );
-        if(result === JE.colors[0]){
-          console.warn("dyec queue fusion produced white", { dye_count, i, fusion, fusion_len, colors, mappedColors, result });
-        }
         // actually add to target now;
         target.s(result, 1);
       }
@@ -519,7 +512,7 @@ class SearchJE{
     await this.main_wait();
     
     // now begin the process;
-    let max_dyec = 4;
+    let max_dyec = 1;
     let curr_dyec = 1;
     const checked = MakeData(64*64*64*64, "int", "bit");
     while(curr_dyec <= max_dyec){
@@ -534,35 +527,23 @@ class SearchJE{
       queues.push(MakeData(64*64*64*64, "int", "bit"));
       
       // now process the removed queue, while grabbing values to put in the other queues;
-      let processedCount = 0;
-      for(let dye_count = 1; dye_count <= JE.dyemax; dye_count++){
+      for(
+        let dye_count = 1;
+        dye_count <= JE.dyemax &&
+        dye_count + curr_dyec <= max_dyec;
+        dye_count++
+      ){
         this.fusions = split_fusions[dye_count - 1];
         // "grab" results with the right number of dyes;
         this.next_queue = queues[dye_count - 1];
         for(let i = 0; i < 64*64*64*64; i++){
           if(this.curr_queue.g(i)){
             did_something = true;
+            this.mixes(i);
             
-            processedCount++;
-            // occasional progress log to avoid freezing without feedback
-            if((processedCount & 0xffff) === 0) console.log(`dyec processing dye_count=${dye_count} processed=${processedCount}`);
-            try {
-              this.mixes(i);
-            } catch (err) {
-              console.log("Error while processing dyec loop", {
-                curr_dyec, dye_count, i,
-                err
-              });
-              return;
-            }
-            // safety cap to avoid extremely long processing loops
-            if(processedCount > 5_000_000){
-              console.warn("dyec loop aborted: processed item cap reached", { curr_dyec, processedCount });
-              break;
-            }
+            await this.main_wait();
           }
         }
-        if(processedCount > 5_000_000) break;
       }
       
       // count how many dyes have been used ''minimum'';

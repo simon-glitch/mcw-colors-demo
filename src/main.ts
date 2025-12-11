@@ -45,7 +45,7 @@ search_instance_je.main();
 
 // progress control for debugging;
 window.addEventListener("click", ()=>{
-  search_instance_je.main_step(1);
+  search_instance_je.main_step(10000);
 });
 
 

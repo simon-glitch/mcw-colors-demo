@@ -1,8 +1,8 @@
 /** The maximum number of dyes that can be used in a single crafting step. */
-const MAX_DYES_PER_CRAFT = 2;
+const MAX_DYES_PER_CRAFT = 1;
 
 /** How many dyes to put in the fusions for BE (see mix.c). */
-const MAX_DYES_FUSION_BE = 4;
+const MAX_DYES_FUSION_BE = 1;
 
 const colors_je = [
   0xF9FFFE, // white       0;
