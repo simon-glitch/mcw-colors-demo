@@ -413,16 +413,33 @@ class SearchJE{
     this.update_queue();
     
     // craftc search; -- ensures we find the minimum crafts for all colors;
-    const craftc_search = () => {
+    const craftc_search = async () => {
       // set max_craftc high if you want to find more recipes and are confident there will not be an infinite loop;
       let max_craftc = 2;
       let curr_craftc = 1;
       while(curr_craftc <= max_craftc){
         let did_something = false;
-        for(let i = 0; i < 64*64*64*64; i++){
+        const total = (() => {
+          let total = 0;
+          for(let i = 0; i < 64*64*64*64; i++){
+            if(this.curr_queue.g(i)){
+              total++;
+            }
+          }
+          return total;
+        })();
+        for(let i = 0, done = 0; i < 64*64*64*64; i++){
           if(this.curr_queue.g(i)){
             did_something = true;
             this.mixes(i);
+            
+            done++;
+            console.log(`dyec = ${curr_dyec} search: ${
+              Math.floor(done / total * 100)
+            }.${
+              Math.floor((done / total * 1000) % 10)
+            }%;`);
+            await this.wait();
           }
         }
         // this is the normal return case; it signifies that we are done;
@@ -436,7 +453,7 @@ class SearchJE{
     }
     
     this.mixing.craftc = true;
-    craftc_search();
+    await craftc_search();
     
     console.log("craftc search done;");
     await this.wait();
@@ -514,11 +531,26 @@ class SearchJE{
         this.fusions = split_fusions[dye_count - 1];
         // "grab" results with the right number of dyes;
         this.next_queue = queues[dye_count - 1];
-        for(let i = 0; i < 64*64*64*64; i++){
+        const total = (() => {
+          let total = 0;
+          for(let i = 0; i < 64*64*64*64; i++){
+            if(this.curr_queue.g(i)){
+              total++;
+            }
+          }
+          return total;
+        })();
+        for(let i = 0, done = 0; i < 64*64*64*64; i++){
           if(this.curr_queue.g(i)){
             did_something = true;
             this.mixes(i);
             
+            done++;
+            console.log(`dyec = ${curr_dyec} search: ${
+              Math.floor(done / total * 100)
+            }.${
+              Math.floor((done / total * 1000) % 10)
+            }%;`);
             await this.wait();
           }
         }
@@ -561,7 +593,7 @@ class SearchJE{
     for(let limit = 1; limit <= JE.dyemax; limit++){
       this.curr_queue = base_queue;
       this.mixing.dyelim_i = limit - 1;
-      craftc_search();
+      await craftc_search();
       
       console.log("dyemax = " + limit + " search done;");
       await this.wait();
@@ -618,6 +650,7 @@ class SearchJE{
     console.log("no_reps_craft search done;");
     await this.wait();
     
+    console.log("Search done!");
   }
   
   private _res_step_i: (value: number | PromiseLike<number>) => void = async function(){ return; };
@@ -650,13 +683,14 @@ class SearchJE{
     });
   }
   playing: boolean = false;
+  mspf: number = 1000 / 60;
   frame_id: number = -1;
   play(): void {
     if(this.playing || this.frame_id !== -1) return;
     this.playing = true;
     this.frame_id = window.setInterval(() => {
       this._res_wait(1);
-    });
+    }, this.mspf);
   }
   pause(): void {
     if(!this.playing || this.frame_id === -1) return;
