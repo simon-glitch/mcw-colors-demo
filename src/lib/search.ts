@@ -253,26 +253,26 @@ class SearchJE{
   }
   mixes(base: number){
     if(this.mixing.craftc){
-      for(let i = 0; i < JE.fusions.idx; i++){
-        const next = JE.fusions.mix(base, i);
+      for(let i = 0; i < this.fusions.idx; i++){
+        const next = this.fusions.mix(base, i);
         this.mix_craftc(base, next);
       }
     }
     if(this.mixing.dyec){
-      for(let i = 0; i < JE.fusions.idx; i++){
-        const next = JE.fusions.mix(base, i);
+      for(let i = 0; i < this.fusions.idx; i++){
+        const next = this.fusions.mix(base, i);
         this.mix_dyec(base, next);
       }
     }
     if(this.mixing.dyelim){
-      for(let i = 0; i < JE.fusions.idx; i++){
-        const next = JE.fusions.mix(base, i);
+      for(let i = 0; i < this.fusions.idx; i++){
+        const next = this.fusions.mix(base, i);
         this.mix_dyemax(base, next);
       }
     }
     if(this.mixing.dyelast){
-      for(let i = 0; i < JE.fusions.idx; i++){
-        const next = JE.fusions.mix(base, i);
+      for(let i = 0; i < this.fusions.idx; i++){
+        const next = this.fusions.mix(base, i);
         this.mix_dyelast(base, next);
       }
     }
@@ -280,6 +280,9 @@ class SearchJE{
   async main(){
     // initial wait step;
     await this.wait();
+    
+    // used by this.mixes;
+    this.fusions = JE.fusions;
     
     // add base fusions;
     for(let i = 0; i < JE.fusions.idx; i++){

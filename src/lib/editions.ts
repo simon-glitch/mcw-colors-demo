@@ -11,6 +11,8 @@ import {
   FusionJE, FusionBE,
   FusionsJE, FusionsBE,
   FUSIONS_JE, FUSIONS_BE,
+  generate_fusions_je,
+  generate_fusions_be,
 } from './mix';
 
 import {
@@ -38,6 +40,7 @@ export const JE = {
   entries: EntriesJE,
   handler: RecipesJE_Handler,
   fusions: FUSIONS_JE,
+  generate_fusions: generate_fusions_je,
 };
 export const BE = {
   colors: colors_be,
@@ -57,4 +60,5 @@ export const BE = {
   entries: EntriesBE,
   handler: RecipesBE_Handler,
   fusions: FUSIONS_BE,
+  generate_fusions: generate_fusions_be,
 };

@@ -329,8 +329,8 @@ function all_sequences(n: number, k: number, f: (using: number[]) => void){
   }
 }
 
-/* If your first thought was "Oh, the combinations with repetitions are the hard part", you were very wrong. */
-function generate_fusions_je(){
+/* If your first thought was "Oh, the combinations with repetitions are the hard part", you were very wrong. It is like 0.1% of the work on this project. */
+export function generate_fusions_je(){
   const fusions: FusionJE[] = [];
   for(let dyes = 1; dyes <= MAX_DYES_PER_CRAFT; dyes++){
     choose_with_reps(16, dyes, (using) => {
@@ -348,7 +348,7 @@ function generate_fusions_je(){
   return new FusionsJE(fusions);
 }
 
-function generate_fusions_be(){
+export function generate_fusions_be(){
   const fusions: FusionBE[] = [];
   for(let dyes = 1; dyes <= MAX_DYES_FUSION_BE; dyes++){
     all_sequences(16, dyes, (using) => {
@@ -366,8 +366,8 @@ function generate_fusions_be(){
   return new FusionsBE(fusions);
 }
 
-export const FUSIONS_JE = generate_fusions_je();
-export const FUSIONS_BE = generate_fusions_be();
+export const FUSIONS_JE = new FusionsJE([]);
+export const FUSIONS_BE = new FusionsBE([]);
 export {
   FusionJE,
   FusionBE,

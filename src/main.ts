@@ -34,11 +34,10 @@ import {
 
 // test_fusions();
 
-console.log("starting search...");
+console.log("loading page...");
 
 let search_instance_je = new SearchJE();
 (window as any).search_instance_je = search_instance_je;
-search_instance_je.main();
 
 // let search_instance_be = new SearchBE();
 // (window as any).search_instance_be = search_instance_be;
@@ -150,4 +149,18 @@ document.getElementById("btn_recipe")!.onclick = () => {
   }
 }
 
+const _console_log = console.log;
+console.log = function(){
+  const log_output = document.getElementById("output_console") as HTMLTextAreaElement;
+  log_output.innerText = Array.from(arguments).join(" ");
+  _console_log.apply(console, arguments as any);
+};
+
+console.log("Page loaded.");
+
+JE.fusions = JE.generate_fusions();
+
+console.log("Fusions generated.");
+
+search_instance_je.main();
 
