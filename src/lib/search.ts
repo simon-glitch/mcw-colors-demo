@@ -84,8 +84,7 @@ class SearchJE{
   fusions = JE.fusions;
   curr_queue: UintData;
   next_queue: UintData;
-  private _res_main_step_i: (value: number | PromiseLike<number>) => void = async function(){ return; };
-  private _res_main_wait: (value: number | PromiseLike<number>) => void = function(){ return; };
+  
   constructor(){
     this.curr_queue = MakeData(64*64*64*64, "int", "bit");
     this.next_queue = MakeData(64*64*64*64, "int", "bit");
@@ -278,34 +277,10 @@ class SearchJE{
       }
     }
   }
-  async _main_step_i(steps: number): Promise<number> {
-    this._res_main_step_i(0);
-    return new Promise<number>((resolve) => {
-      this._res_main_step_i = resolve;
-    });
-  };
-  /**
-   * Tell the search.main to step forward.
-   * @param steps number of times to automatically step the search forward;
-   */
-  async main_step(steps: number): Promise<number> {
-    for(let i = 0; i < steps; i++){
-      this._res_main_wait(i);
-      await this._main_step_i(i);
-    }
-    return steps;
-  };
-  /**
-   * Used in main to wait for a signal from main_step, which indicates when main should continue.
-   * @returns promise that resolves when main_step signals to continue;
-   */
-  main_wait(): Promise<number> {
-    this._res_main_step_i(0);
-    return new Promise<number>((resolve) => {
-      this._res_main_wait = resolve;
-    });
-  }
   async main(){
+    // initial wait step;
+    await this.wait();
+    
     // add base fusions;
     for(let i = 0; i < JE.fusions.idx; i++){
       // get the color that the fusion makes on its own;
@@ -418,7 +393,7 @@ class SearchJE{
     }
     
     console.log("fusions added;");
-    await this.main_wait();
+    await this.wait();
     
     // split fusions into lists based on dye count;
     const split_fusions: FusionsJE[] = new Array(JE.dyemax).fill(null).map(
@@ -428,7 +403,7 @@ class SearchJE{
     );
     
     console.log("fusion splitting done;");
-    await this.main_wait();
+    await this.wait();
     
     const base_queue = this.next_queue;
     // this does not modify base_queue;
@@ -461,7 +436,7 @@ class SearchJE{
     craftc_search();
     
     console.log("craftc search done;");
-    await this.main_wait();
+    await this.wait();
     
     // dyec search; -- ensures we find the minimum dyes used total for all colors;
     this.mixing.craftc = false;
@@ -509,7 +484,7 @@ class SearchJE{
     }
     
     console.log("dyec queues ready;");
-    await this.main_wait();
+    await this.wait();
     
     // now begin the process;
     let max_dyec = 4;
@@ -541,7 +516,7 @@ class SearchJE{
             did_something = true;
             this.mixes(i);
             
-            await this.main_wait();
+            await this.wait();
           }
         }
       }
@@ -550,7 +525,7 @@ class SearchJE{
       curr_dyec++;
       
       console.log("dyec = " + curr_dyec + " search done;");
-      await this.main_wait();
+      await this.wait();
       
       // avoid one type of infinite loop;
       // you can still have infinite loops due to bugs in the code above;
@@ -574,7 +549,7 @@ class SearchJE{
     }
     
     console.log("dyec search done;");
-    await this.main_wait();
+    await this.wait();
     
     // finally, do dyemax search; -- ensures we find the minimum maximum dyes used in a single craft for all colors;
     this.mixing.dyec = false;
@@ -586,7 +561,7 @@ class SearchJE{
       craftc_search();
       
       console.log("dyemax = " + limit + " search done;");
-      await this.main_wait();
+      await this.wait();
     }
     
     // no_brown search;
@@ -595,7 +570,7 @@ class SearchJE{
     );
     
     console.log("no_brown search done;");
-    await this.main_wait();
+    await this.wait();
     
     // only_roygbp search;
     this.fusions = JE.fusions.filter(
@@ -615,7 +590,7 @@ class SearchJE{
     );
     
     console.log("only_roygbp search done;");
-    await this.main_wait();
+    await this.wait();
     
     // no_reps search;
     this.fusions = JE.fusions.filter(
@@ -632,14 +607,59 @@ class SearchJE{
     );
     
     console.log("no_reps search done;");
-    await this.main_wait();
+    await this.wait();
     
     // no_reps_craft search;
     // uses the same this.fusions as no_reps;
     
     console.log("no_reps_craft search done;");
-    await this.main_wait();
+    await this.wait();
     
+  }
+  
+  private _res_step_i: (value: number | PromiseLike<number>) => void = async function(){ return; };
+  private _res_wait: (value: number | PromiseLike<number>) => void = function(){ return; };
+  private async _step_i(steps: number): Promise<number> {
+    this._res_step_i(0);
+    return new Promise<number>((resolve) => {
+      this._res_step_i = resolve;
+    });
+  };
+  /**
+   * Tell the search.main to step forward.
+   * @param steps number of times to automatically step the search forward;
+   */
+  async step(steps: number): Promise<number> {
+    for(let i = 0; i < steps; i++){
+      this._res_wait(i);
+      await this._step_i(i);
+    }
+    return steps;
+  };
+  /**
+   * Used in main to wait for a signal from main_step, which indicates when main should continue.
+   * @returns promise that resolves when main_step signals to continue;
+   */
+  wait(): Promise<number> {
+    this._res_step_i(0);
+    return new Promise<number>((resolve) => {
+      this._res_wait = resolve;
+    });
+  }
+  playing: boolean = false;
+  frame_id: number = -1;
+  play(): void {
+    if(this.playing || this.frame_id !== -1) return;
+    this.playing = true;
+    this.frame_id = window.setInterval(() => {
+      this._res_wait(1);
+    });
+  }
+  pause(): void {
+    if(!this.playing || this.frame_id === -1) return;
+    this.playing = false;
+    window.clearInterval(this.frame_id);
+    this.frame_id = -1;
   }
 }
 
