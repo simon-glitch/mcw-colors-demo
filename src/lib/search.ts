@@ -419,6 +419,7 @@ class SearchJE{
       let curr_craftc = 1;
       while(curr_craftc <= max_craftc){
         let did_something = false;
+        
         const total = (() => {
           let total = 0;
           for(let i = 0; i < 64*64*64*64; i++){
@@ -428,13 +429,15 @@ class SearchJE{
           }
           return total;
         })();
-        for(let i = 0, done = 0; i < 64*64*64*64; i++){
+        let done = 0;
+        
+        for(let i = 0; i < 64*64*64*64; i++){
           if(this.curr_queue.g(i)){
             did_something = true;
             this.mixes(i);
             
             done++;
-            console.log(`dyec = ${curr_dyec} search: ${
+            console.log(`craftc = ${curr_craftc} search: ${
               Math.floor(done / total * 100)
             }.${
               Math.floor((done / total * 1000) % 10)
@@ -521,6 +524,17 @@ class SearchJE{
       // add new empty queue;
       queues.push(MakeData(64*64*64*64, "int", "bit"));
       
+      const total = (() => {
+        let total = 0;
+        for(let i = 0; i < 64*64*64*64; i++){
+          if(this.curr_queue.g(i)){
+            total++;
+          }
+        }
+        return total;
+      })();
+      let done = 0;
+      
       // now process the removed queue, while grabbing values to put in the other queues;
       for(
         let dye_count = 1;
@@ -531,16 +545,7 @@ class SearchJE{
         this.fusions = split_fusions[dye_count - 1];
         // "grab" results with the right number of dyes;
         this.next_queue = queues[dye_count - 1];
-        const total = (() => {
-          let total = 0;
-          for(let i = 0; i < 64*64*64*64; i++){
-            if(this.curr_queue.g(i)){
-              total++;
-            }
-          }
-          return total;
-        })();
-        for(let i = 0, done = 0; i < 64*64*64*64; i++){
+        for(let i = 0; i < 64*64*64*64; i++){
           if(this.curr_queue.g(i)){
             did_something = true;
             this.mixes(i);
