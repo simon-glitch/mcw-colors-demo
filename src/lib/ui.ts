@@ -108,10 +108,10 @@ export function load_page(
   document.getElementById("btn_recipe")!.onclick = () => {
     const result = get_recipe();
     if("recipe" in result){
-      (output_recipe as HTMLInputElement).value = (result.recipe as string);
+      (output_recipe as HTMLInputElement).innerText = (result.recipe as string);
     }
     if("recipe_set" in result){
-      (output_recipe_set as HTMLInputElement).value = (result.recipe_set as string);
+      (output_recipe_set as HTMLInputElement).innerText = (result.recipe_set as string);
     }
   }
 
