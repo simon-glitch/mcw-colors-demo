@@ -183,7 +183,7 @@ class RecipesJE_Handler{
         (colors >>  8) & 0xf,
         (colors >>  4) & 0xf,
         (colors      ) & 0xf,
-      ]);
+      ].slice(0, dyelen));
       c = this.recipes.recipe.color.g(c);
       if(c === NO_ENTRY) break;
     }
