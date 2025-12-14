@@ -277,9 +277,9 @@ class SearchJE{
       }
     }
   }
-  async main(){
+  async main(wait: () =>Promise<number> | number){
     // initial wait step;
-    await this.wait();
+    await wait();
     
     // used by this.mixes;
     this.fusions = JE.fusions;
@@ -396,7 +396,7 @@ class SearchJE{
     }
     
     console.log("fusions added;");
-    await this.wait();
+    await wait();
     
     // split fusions into lists based on dye count;
     const split_fusions: FusionsJE[] = new Array(JE.dyemax).fill(null).map(
@@ -406,7 +406,7 @@ class SearchJE{
     );
     
     console.log("fusion splitting done;");
-    await this.wait();
+    await wait();
     
     const base_queue = this.next_queue;
     // this does not modify base_queue;
@@ -442,7 +442,7 @@ class SearchJE{
             }.${
               Math.floor((done / total * 1000) % 10)
             }%;`);
-            await this.wait();
+            await wait();
           }
         }
         // this is the normal return case; it signifies that we are done;
@@ -459,7 +459,7 @@ class SearchJE{
     await craftc_search();
     
     console.log("craftc search done;");
-    await this.wait();
+    await wait();
     
     // dyec search; -- ensures we find the minimum dyes used total for all colors;
     this.mixing.craftc = false;
@@ -507,7 +507,7 @@ class SearchJE{
     }
     
     console.log("dyec queues ready;");
-    await this.wait();
+    await wait();
     
     // now begin the process;
     let max_dyec = 4;
@@ -556,7 +556,7 @@ class SearchJE{
             }.${
               Math.floor((done / total * 1000) % 10)
             }%;`);
-            await this.wait();
+            await wait();
           }
         }
       }
@@ -589,7 +589,7 @@ class SearchJE{
     }
     
     console.log("dyec search done;");
-    await this.wait();
+    await wait();
     
     // finally, do dyemax search; -- ensures we find the minimum maximum dyes used in a single craft for all colors;
     this.mixing.dyec = false;
@@ -601,7 +601,7 @@ class SearchJE{
       await craftc_search();
       
       console.log("dyemax = " + limit + " search done;");
-      await this.wait();
+      await wait();
     }
     
     // no_brown search;
@@ -610,7 +610,7 @@ class SearchJE{
     );
     
     console.log("no_brown search done;");
-    await this.wait();
+    await wait();
     
     // only_roygbp search;
     this.fusions = JE.fusions.filter(
@@ -630,7 +630,7 @@ class SearchJE{
     );
     
     console.log("only_roygbp search done;");
-    await this.wait();
+    await wait();
     
     // no_reps search;
     this.fusions = JE.fusions.filter(
@@ -647,72 +647,15 @@ class SearchJE{
     );
     
     console.log("no_reps search done;");
-    await this.wait();
+    await wait();
     
     // no_reps_craft search;
     // uses the same this.fusions as no_reps;
     
     console.log("no_reps_craft search done;");
-    await this.wait();
+    await wait();
     
     console.log("Search done!");
-  }
-  
-  private _res_step_i: (value: number | PromiseLike<number>) => void = async function(){ return; };
-  private _res_wait: (value: number | PromiseLike<number>) => void = function(){ return; };
-  private async _step_i(steps: number): Promise<number> {
-    this._res_step_i(0);
-    return new Promise<number>((resolve) => {
-      this._res_step_i = resolve;
-    });
-  };
-  /**
-   * Tell the search.main to step forward.
-   * @param steps number of times to automatically step the search forward;
-   */
-  async step(steps: number): Promise<number> {
-    for(let i = 0; i < steps; i++){
-      this._res_wait(i);
-      await this._step_i(i);
-    }
-    return steps;
-  };
-  /**
-   * Used in main to wait for a signal from main_step, which indicates when main should continue.
-   * @returns promise that resolves when main_step signals to continue;
-   */
-  wait_step(): Promise<number> {
-    this._res_step_i(0);
-    return new Promise<number>((resolve) => {
-      this._res_wait = resolve;
-    });
-  }
-  _wait_time = new Date;
-  /** What proportion of `this.mspf` to allow `this.main` to run for before waiting for the next call of `this.step`. Should be between 0 and 1. */
-  _wait_time_prop = 0.5;
-  wait(): Promise<number> {
-    const now = new Date;
-    if(+now - +this._wait_time >= this._wait_time_prop * this.mspf){
-      this._wait_time = now;
-      return this.wait_step();
-    }
-    return new Promise(res => {res(1)});
-  }
-  playing: boolean = false;
-  mspf: number = 1000 / 60;
-  frame_id: number = -1;
-  play(): void {
-    if(this.playing || this.frame_id !== -1) return;
-    this.playing = true;
-    this.frame_id = window.setInterval(() => {
-      this._res_wait(1);
-    }, this.mspf);
-  }
-  pause(): void {
-    if(!this.playing || this.frame_id === -1) return;
-    this.playing = false;
-    window.clearInterval(this.frame_id);
-    this.frame_id = -1;
   }
 }
 
