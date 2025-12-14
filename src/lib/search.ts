@@ -1,3 +1,4 @@
+import { MAX_CRAFTC, MAX_DYEC } from "./color";
 import { MakeData, UintData } from "./data";
 import {
   JE, BE
@@ -173,6 +174,12 @@ class SearchJE{
       this.entries.dyec   .recipe.dyemax.s(next, next_dyemax );
       this.entries.dyec   .recipe.dyelen.s(next, next_dyelast);
     }
+    console.log({
+      craftc: this.entries.dyec   .recipe.craftc.g(next),
+      dyec  : this.entries.dyec   .recipe.dyec  .g(next),
+      dyemax: this.entries.dyec   .recipe.dyemax.g(next),
+      dyelen: this.entries.dyec   .recipe.dyelen.g(next),
+    });
   }
   mix_dyelast(
     base: number,
@@ -418,9 +425,8 @@ class SearchJE{
     // craftc search; -- ensures we find the minimum crafts for all colors;
     const craftc_search = async () => {
       // set max_craftc high if you want to find more recipes and are confident there will not be an infinite loop;
-      let max_craftc = 2;
       let curr_craftc = 1;
-      while(curr_craftc <= max_craftc){
+      while(curr_craftc <= MAX_CRAFTC){
         let did_something = false;
         
         const total = (() => {
@@ -513,10 +519,9 @@ class SearchJE{
     await wait();
     
     // now begin the process;
-    let max_dyec = 4;
     let curr_dyec = 1;
     const checked = MakeData(64*64*64*64, "int", "bit");
-    while(curr_dyec <= max_dyec){
+    while(curr_dyec <= MAX_DYEC){
       let did_something = false;
       
       this.next_queue = queues[0];
@@ -542,7 +547,7 @@ class SearchJE{
       for(
         let dye_count = 1;
         dye_count <= JE.dyemax &&
-        dye_count + curr_dyec <= max_dyec;
+        dye_count + curr_dyec <= MAX_DYEC;
         dye_count++
       ){
         this.fusions = split_fusions[dye_count - 1];

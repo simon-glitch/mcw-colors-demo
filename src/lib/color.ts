@@ -4,6 +4,10 @@ const MAX_DYES_PER_CRAFT = 1;
 /** How many dyes to put in the fusions for BE (see mix.c). */
 const MAX_DYES_FUSION_BE = 1;
 
+// more magic numbers for SearchJE;
+const MAX_CRAFTC = 2;
+const MAX_DYEC = 2;
+
 const colors_je = [
   0xF9FFFE, // white       0;
   0x9D9D97, // light_gray  1;
@@ -111,6 +115,8 @@ function merge_be(color: [r: number, g: number, b: number]): number {
 export{
   MAX_DYES_PER_CRAFT,
   MAX_DYES_FUSION_BE,
+  MAX_CRAFTC,
+  MAX_DYEC,
   colors_je,
   colors_be,
   color_index,
