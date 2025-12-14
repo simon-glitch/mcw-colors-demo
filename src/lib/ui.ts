@@ -124,6 +124,47 @@ export function load_page(
   
   console.log("Page loaded.");
   
+  // okay, now i'm curious just how much RAM search_je uses;
+  // this is not a 100% accurate way to measure RAM usage;
+  // but it works for search_je since all of the important data is stored in ArrayBuffers;
+  function sizeof(obj: any){
+    // this symbol should get cleaned up when the function is done;
+    const checked = Symbol("checked");
+    function _sizeof(obj: any) {
+      if(obj[checked]) return 0;
+      obj[checked] = true;
+      let total = 0;
+      for(const k in obj){
+        if(typeof obj[k] === "object"){
+          if(obj[k] === null){}
+          else if(obj[k]?.buffer instanceof ArrayBuffer){
+            total += obj[k].buffer.byteLength;
+          }
+          else if(obj[k] instanceof ArrayBuffer){
+            total += obj[k].byteLength;
+          }
+          else{
+            total += _sizeof(obj[k]);
+          }
+        }
+        else if(
+          typeof obj[k] === "number" ||
+          typeof obj[k] === "boolean"
+        ){
+          total += 8;
+        }
+        else if(typeof obj[k] === "string"){
+          total += obj[k].length * 2;
+        }
+      }
+      return total;
+    }
+    return _sizeof(obj);
+  }
+  
+  // 3372.14 MB!
+  console.log(`RAM usage: ${(sizeof(search_instance_je) / 2**20).toFixed(2)} MB.`);
+  
   search_instance_je.main(frame.wait.bind(frame));
 }
 
