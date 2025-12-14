@@ -217,10 +217,6 @@ console.log = function(){
 
 console.log("Page loaded.");
 
-JE.fusions = JE.generate_fusions();
-
-console.log("Fusions generated.");
-
 search_instance_je = new SearchJE();
 (window as any).search_instance_je = search_instance_je;
 search_instance_je.main(frame.wait.bind(frame));

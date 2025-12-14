@@ -281,6 +281,9 @@ class SearchJE{
     // initial wait step;
     await wait();
     
+    JE.fusions = JE.generate_fusions();
+    console.log("fusions generated;");
+    
     // used by this.mixes;
     this.fusions = JE.fusions;
     
@@ -565,7 +568,7 @@ class SearchJE{
       curr_dyec++;
       
       console.log("dyec = " + curr_dyec + " search done;");
-      await this.wait();
+      await wait();
       
       // avoid one type of infinite loop;
       // you can still have infinite loops due to bugs in the code above;
